@@ -18,6 +18,7 @@ import org.kapott.hbci.structures.Konto
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
+import kotlin.concurrent.thread
 
 
 open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: String, private val pin: String) : IBankingClient {
@@ -102,20 +103,27 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
     }
 
 
-    override fun getAccounts(): GetAccountsResult {
+    override fun getAccountsAsync(callback: (GetAccountsResult) -> Unit) {
+        thread {
+            callback(getAccounts())
+        }
+    }
+
+    protected open fun getAccounts(): GetAccountsResult {
         val connection = connect()
         closeConnection(connection)
 
         if(connection.successful) {
             connection.passport?.let { passport ->
-                val konten = passport.accounts
-                if (konten == null || konten.size == 0) {
+                val accounts = passport.accounts
+                if(accounts == null || accounts.size == 0) {
                     log.error("Keine Konten ermittelbar")
                     return GetAccountsResult(false, error = Exception("Keine Konten ermittelbar"))
                 }
 
-                log.info("Anzahl Konten: " + konten.size)
-                return GetAccountsResult(true, konten.toList()) // TODO: map to Banking specific Account object
+                log.info("Anzahl Konten: " + accounts.size)
+
+                return GetAccountsResult(true, accounts.toList()) // TODO: map to Banking specific Account object
             }
         }
 
@@ -123,7 +131,13 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
     }
 
 
-    override fun getAccountingEntries(account: Konto): AccountingEntries {
+    override fun getAccountingEntriesAsync(account: Konto, callback: (AccountingEntries) -> Unit) {
+        thread {
+            callback(getAccountingEntries(account))
+        }
+    }
+
+    protected open fun getAccountingEntries(account: Konto): AccountingEntries {
         val connection = connect()
 
         connection.handle?.let { handle ->

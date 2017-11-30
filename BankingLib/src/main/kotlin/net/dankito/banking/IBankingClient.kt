@@ -7,8 +7,8 @@ import org.kapott.hbci.structures.Konto
 
 interface IBankingClient {
 
-    fun getAccounts(): GetAccountsResult
+    fun getAccountsAsync(callback: (GetAccountsResult) -> Unit)
 
-    fun getAccountingEntries(account: Konto): AccountingEntries
+    fun getAccountingEntriesAsync(account: Konto, callback: (AccountingEntries) -> Unit)
 
 }
