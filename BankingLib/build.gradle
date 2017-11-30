@@ -1,0 +1,30 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.6"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.6"
+}
+
+
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+    compile "com.github.hbci4j:hbci4j-core:$hbci4jVersion"
+
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
+
+
+    testCompile "junit:junit:$junitVersion"
+
+    testCompile "ch.qos.logback:logback-core:$logbackVersion"
+    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
