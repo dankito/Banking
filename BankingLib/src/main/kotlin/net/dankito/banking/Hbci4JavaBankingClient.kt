@@ -116,14 +116,15 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
         if(connection.successful) {
             connection.passport?.let { passport ->
                 val accounts = passport.accounts
-                if(accounts == null || accounts.size == 0) {
+                if (accounts == null || accounts.size == 0) {
                     log.error("Keine Konten ermittelbar")
                     return GetAccountsResult(false, error = Exception("Keine Konten ermittelbar"))
                 }
 
                 log.info("Anzahl Konten: " + accounts.size)
+                val bankInfo = HBCIUtils.getBankInfo(bankleitzahl)
 
-                return GetAccountsResult(true, accounts.toList()) // TODO: map to Banking specific Account object
+                return GetAccountsResult(true, accounts.toList(), bankInfo) // TODO: map to Banking specific Account object
             }
         }
 
