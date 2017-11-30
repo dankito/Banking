@@ -1,1 +1,3 @@
-include ':app', ':BankingLib'
+include ':BankingAndroidApp'
+
+include ':BankingLib'
