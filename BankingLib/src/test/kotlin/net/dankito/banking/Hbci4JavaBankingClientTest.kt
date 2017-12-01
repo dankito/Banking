@@ -1,5 +1,6 @@
 package net.dankito.banking
 
+import net.dankito.banking.model.AccountCredentials
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.GetAccountsResult
 import org.hamcrest.CoreMatchers.*
@@ -16,7 +17,7 @@ class Hbci4JavaBankingClientTest {
 
     @Before
     fun setUp() {
-        underTest = Hbci4JavaBankingClient("", "", "") // set your account details here
+        underTest = Hbci4JavaBankingClient(AccountCredentials("", "", "")) // set your account details here
     }
 
 
@@ -36,7 +37,8 @@ class Hbci4JavaBankingClientTest {
         assertThat(getAccountsResult, notNullValue())
         assertThat(getAccountsResult?.successful, `is`(true))
         assertThat(getAccountsResult?.error, nullValue())
-        assertThat(getAccountsResult?.accounts?.size, `is`(not(0)))
+        assertThat(getAccountsResult?.bankInfo, notNullValue())
+        assertThat(getAccountsResult?.bankInfo?.accounts?.size, `is`(not(0)))
     }
 
     @Test
@@ -45,11 +47,12 @@ class Hbci4JavaBankingClientTest {
         val countDownLatch = CountDownLatch(1)
 
         underTest.getAccountsAsync { getAccountsResult ->
-            if(getAccountsResult.successful == false) {
+            val bankInfo = getAccountsResult.bankInfo
+            if(getAccountsResult.successful == false || bankInfo == null) {
                 countDownLatch.countDown()
             }
             else {
-                underTest.getAccountingEntriesAsync(getAccountsResult.accounts[0]) {
+                underTest.getAccountingEntriesAsync(bankInfo.accounts[0]) {
                     result.set(it)
                     countDownLatch.countDown()
                 }
