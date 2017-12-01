@@ -9,6 +9,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import net.dankito.banking.javafx.dialogs.DialogFragment
 import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
+import net.dankito.banking.javafx.util.JavaFXDialogService
 import net.dankito.banking.model.AccountCredentials
 import net.dankito.banking.model.GetAccountsResult
 import tornadofx.*
@@ -35,6 +36,8 @@ class AddAccountDialog : DialogFragment() {
 
 
     val controller: MainWindowController by param()
+
+    private val dialogService = JavaFXDialogService()
 
 
     override val root = vbox {
@@ -146,13 +149,26 @@ class AddAccountDialog : DialogFragment() {
     }
 
     private fun retrievedGetAccountsResult(credentials: AccountCredentials, result: GetAccountsResult) {
-        result.error?.let { showError(messages["error.message.could.not.add.account"], credentials, it) }
+        result.error?.let { showError(credentials, it) }
 
-        result.bankInfo?.let { close() }
+        result.bankInfo?.let {
+            dialogService.showInfoMessage(messages["error.message.add.account.success"], null, currentStage)
+            close()
+        }
     }
 
-    private fun showError(errorMessage: String, credentials: AccountCredentials, error: Exception) {
-        // TODO
+    private fun showError(credentials: AccountCredentials, error: Exception) {
+        var innerException = error
+        var depth = 0
+
+        while(innerException.cause is Exception && depth < 3) {
+            innerException = innerException.cause as Exception
+            depth++
+        }
+
+        val errorMessage = String.format(messages["error.message.could.not.add.account"], credentials.bankleitzahl, credentials.customerId, innerException.localizedMessage)
+
+        dialogService.showErrorMessage(errorMessage, null, error, currentStage)
     }
 
 }
