@@ -19,6 +19,8 @@ dependencies {
 
     compile "com.github.hbci4j:hbci4j-core:$hbci4jVersion"
 
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+
     compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 
