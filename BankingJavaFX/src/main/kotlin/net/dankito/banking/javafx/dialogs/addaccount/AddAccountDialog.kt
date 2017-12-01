@@ -3,6 +3,8 @@ package net.dankito.banking.javafx.dialogs.addaccount
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.TextField
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import net.dankito.banking.javafx.dialogs.DialogFragment
@@ -48,6 +50,8 @@ class AddAccountDialog : DialogFragment(FX.messages["add.account.dialog.title"])
 //            promptText = messages[""]
             prefHeight = TextFieldHeight
 
+            setOnKeyReleased { keyReleased(it) }
+
             vboxConstraints {
                 margin = TextFieldMargins
             }
@@ -63,6 +67,8 @@ class AddAccountDialog : DialogFragment(FX.messages["add.account.dialog.title"])
             promptText = messages["add.account.dialog.customer.id.hint"]
             prefHeight = TextFieldHeight
 
+            setOnKeyReleased { keyReleased(it) }
+
             vboxConstraints {
                 margin = TextFieldMargins
             }
@@ -77,6 +83,8 @@ class AddAccountDialog : DialogFragment(FX.messages["add.account.dialog.title"])
         txtfldPassword = passwordfield {
             promptText = messages["add.account.dialog.password.hint"]
             prefHeight = TextFieldHeight
+
+            setOnKeyReleased { keyReleased(it) }
 
             vboxConstraints {
                 margin = TextFieldMargins
@@ -110,6 +118,7 @@ class AddAccountDialog : DialogFragment(FX.messages["add.account.dialog.title"])
         }
     }
 
+
     private fun clickedCancelButton(event: MouseEvent) {
         if(event.button == MouseButton.PRIMARY) {
             close()
@@ -118,11 +127,21 @@ class AddAccountDialog : DialogFragment(FX.messages["add.account.dialog.title"])
 
     private fun clickedOkButton(event: MouseEvent) {
         if(event.button == MouseButton.PRIMARY) {
-            val credentials = AccountCredentials(txtfldBankCode.text, txtfldCustomerId.text, txtfldPassword.text)
+            checkEnteredCredentials()
+        }
+    }
 
-            controller.addAccountAsync(credentials) { result ->
-                runLater { retrievedGetAccountsResult(credentials, result) }
-            }
+    private fun keyReleased(event: KeyEvent) {
+        if(event.code == KeyCode.ENTER) {
+            checkEnteredCredentials()
+        }
+    }
+
+    private fun checkEnteredCredentials() {
+        val credentials = AccountCredentials(txtfldBankCode.text, txtfldCustomerId.text, txtfldPassword.text)
+
+        controller.addAccountAsync(credentials) { result ->
+            runLater { retrievedGetAccountsResult(credentials, result) }
         }
     }
 
