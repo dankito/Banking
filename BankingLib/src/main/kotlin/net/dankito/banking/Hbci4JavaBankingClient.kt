@@ -105,6 +105,10 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
         handle?.close()
 
         passport?.close()
+
+        try {
+            HBCIUtils.doneThread() // i hate static variables, here's one of the reasons why: Old callbacks and therefore credentials get stored in static variables and therefor always the first entered credentials have been used
+        } catch(ignored: Exception) { }
     }
 
 
@@ -159,7 +163,6 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
         connection.handle?.let { handle ->
             try {
                 val (saldoJob, umsatzJob, status) = executeJobsForGetAccountingEntries(handle, account)
-                closeConnection(connection)
 
                 // Pruefen, ob die Kommunikation mit der Bank grundsaetzlich geklappt hat
                 if(!status.isOK) {
@@ -194,6 +197,9 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
             catch(e: Exception) {
                 log.error("Could not get accounting details for bank ${credentials.bankleitzahl}", e)
                 return AccountingEntries(false, error = e)
+            }
+            finally {
+                closeConnection(connection)
             }
         }
 
