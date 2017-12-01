@@ -5,17 +5,31 @@ import org.kapott.hbci.structures.Value
 import java.util.*
 
 
-class AccountingEntry(val value: Value, var bookingDate: Date, val type: String, val other: Konto, val usage: String) {
+class AccountingEntry(val value: Value, var bookingDate: Date, val valutaDate: Date, val type: String, val other: Konto, val usage: String) {
 
     var endToEndReference: String? = null
 
+    var kundenreferenz: String? = null
+
+    var mandatsreferenz: String? = null
+
+    var creditorIdentifier: String? = null
+
     var originatorsIdentificationCode: String? = null
+
+    var compensationAmount: String? = null
+
+    var originalAmount: String? = null
 
     var sepaVerwendungszweck: String? = null
 
     var abweichenderAuftraggeber: String? = null
 
+    var abweichenderZahlungsempfaenger: String? = null
+
     var usageWithNoSpecialType: String? = null
+
+    val parsedUsages = ArrayList<String>()
 
 
     fun showOtherName(): Boolean {
