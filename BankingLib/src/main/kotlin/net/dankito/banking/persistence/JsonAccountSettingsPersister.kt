@@ -12,10 +12,6 @@ import java.io.FileWriter
 
 class JsonAccountSettingsPersister : IAccountSettingsPersister {
 
-    companion object {
-        const val AccountsFilename = "Accounts.json"
-    }
-
 
     private val objectMapper = ObjectMapper()
 
@@ -29,25 +25,18 @@ class JsonAccountSettingsPersister : IAccountSettingsPersister {
     }
 
 
-    override fun persistAccounts(bankInfos: List<BankInfo>) {
+    override fun persistAccounts(destinationFile: File, bankInfos: List<BankInfo>) {
         val json = objectMapper.writeValueAsString(bankInfos) // TODO: encrypt, passwords as well as file as whole
 
-        val file = getAccountsFile()
-        val writer = BufferedWriter(FileWriter(file))
+        val writer = BufferedWriter(FileWriter(destinationFile))
 
         writer.write(json)
         writer.flush()
         writer.close()
     }
 
-    override fun getPersistedAccounts(): List<BankInfo> {
-        val file = getAccountsFile()
-
+    override fun getPersistedAccounts(file: File): List<BankInfo> {
         return objectMapper.readValue<List<BankInfo>>(file, objectMapper.typeFactory.constructParametricType(List::class.java, BankInfo::class.java))
-    }
-
-    private fun getAccountsFile(): File {
-        return File(AccountsFilename) // TODO: for Android this will not work
     }
 
 }
