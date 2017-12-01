@@ -167,7 +167,7 @@ class MainWindowController : Controller() {
 
     // TODO: move to router
     fun showAddAccountDialog() {
-        find(AddAccountDialog::class.java, mapOf(AddAccountDialog::controller to this)).show()
+        find(AddAccountDialog::class.java, mapOf(AddAccountDialog::controller to this)).show(FX.messages["add.account.dialog.title"], owner = primaryStage)
     }
 
 }

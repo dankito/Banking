@@ -14,7 +14,7 @@ import net.dankito.banking.model.GetAccountsResult
 import tornadofx.*
 
 
-class AddAccountDialog : DialogFragment(FX.messages["add.account.dialog.title"]) {
+class AddAccountDialog : DialogFragment() {
 
     companion object {
         private val LabelMargins = Insets(6.0, 4.0, 6.0, 4.0)
