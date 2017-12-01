@@ -21,7 +21,7 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
 
-open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: String, private val pin: String) : IBankingClient {
+open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankingClient {
 
     companion object {
         private val DateStartString = "DATUM "
@@ -35,15 +35,15 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
 
 
     protected open fun connect(): ConnectionValues {
-        return connect(bankleitzahl, customerId, pin, HBCIVersion.HBCI_300)
+        return connect(credentials, HBCIVersion.HBCI_300)
     }
 
-    protected open fun connect(bankleitzahl: String, customerId: String, pin: String, version: HBCIVersion): ConnectionValues {
+    protected open fun connect(credentials: AccountCredentials, version: HBCIVersion): ConnectionValues {
         // HBCI4Java initialisieren
         // In "props" koennen optional Kernel-Parameter abgelegt werden, die in der Klasse
         // org.kapott.hbci.manager.HBCIUtils (oben im Javadoc) beschrieben sind.
         val props = Properties()
-        HBCIUtils.init(props, MyHBCICallback(bankleitzahl, customerId, pin))
+        HBCIUtils.init(props, MyHBCICallback(credentials))
 
         // In der Passport-Datei speichert HBCI4Java die Daten des Bankzugangs (Bankparameterdaten, Benutzer-Parameter, etc.).
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
@@ -71,7 +71,7 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
             passport.country = "DE"
 
             // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
-            val info = HBCIUtils.getBankInfo(bankleitzahl)
+            val info = HBCIUtils.getBankInfo(credentials.bankleitzahl)
             passport.host = info.pinTanAddress
 
             // TCP-Port des Servers. Bei PIN/TAN immer 443, da das ja ueber HTTPS laeuft.
@@ -87,7 +87,7 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
 
         }
         catch(e: Exception) {
-            log.error("Could not connect to bank $bankleitzahl", e)
+            log.error("Could not connect to bank ${credentials.bankleitzahl}", e)
             closeConnection(handle, passport)
 
             return ConnectionValues(false, error = e)
@@ -127,23 +127,33 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
                 }
 
                 log.info("Anzahl Konten: " + accounts.size)
-                val bankInfo = HBCIUtils.getBankInfo(bankleitzahl)
+                val bankInfo = HBCIUtils.getBankInfo(credentials.bankleitzahl)
 
-                return GetAccountsResult(true, accounts.toList(), bankInfo) // TODO: map to Banking specific Account object
+                return GetAccountsResult(true, BankInfo(bankInfo, mapAccounts(accounts, credentials)))
             }
         }
 
         return GetAccountsResult(false, error = connection.error)
     }
 
+    private fun mapAccounts(accounts: Array<out Konto>, credentials: AccountCredentials): List<Account> {
+        val mappedAccounts = ArrayList<Account>()
 
-    override fun getAccountingEntriesAsync(account: Konto, callback: (AccountingEntries) -> Unit) {
+        accounts.forEach { account ->
+            mappedAccounts.add(Account(account, credentials))
+        }
+
+        return mappedAccounts
+    }
+
+
+    override fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         thread {
             callback(getAccountingEntries(account))
         }
     }
 
-    protected open fun getAccountingEntries(account: Konto): AccountingEntries {
+    protected open fun getAccountingEntries(account: Account): AccountingEntries {
         val connection = connect()
 
         connection.handle?.let { handle ->
@@ -153,15 +163,15 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
 
                 // Pruefen, ob die Kommunikation mit der Bank grundsaetzlich geklappt hat
                 if(!status.isOK) {
-                    log.error("Could not connect to bank $bankleitzahl ${status.toString()}: ${status.errorString}")
-                    return AccountingEntries(false, error = Exception("Could not connect to bank $bankleitzahl: ${status.toString()}"))
+                    log.error("Could not connect to bank ${credentials.bankleitzahl} ${status.toString()}: ${status.errorString}")
+                    return AccountingEntries(false, error = Exception("Could not connect to bank ${credentials.bankleitzahl}: ${status.toString()}"))
                 }
 
                 // Auswertung des Saldo-Abrufs.
                 val saldoResult = saldoJob.jobResult as GVRSaldoReq
                 if(!saldoResult.isOK) {
-                    log.error("Could not get saldo of bank $bankleitzahl: ${saldoResult.toString()}", saldoResult.getJobStatus().exceptions)
-                    return AccountingEntries(false, error = Exception("Could not get saldo of bank $bankleitzahl: ${saldoResult.toString()}"))
+                    log.error("Could not get saldo of bank ${credentials.bankleitzahl}: ${saldoResult.toString()}", saldoResult.getJobStatus().exceptions)
+                    return AccountingEntries(false, error = Exception("Could not get saldo of bank ${credentials.bankleitzahl}: ${saldoResult.toString()}"))
                 }
 
                 val saldo = saldoResult.entries[0].ready.value
@@ -174,15 +184,15 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
 
                 // Pruefen, ob der Abruf der Umsaetze geklappt hat
                 if(!result.isOK) {
-                    log.error("Could not get accounting details of bank $bankleitzahl: ${result.toString()}", result.getJobStatus().exceptions)
-                    return AccountingEntries(false, error = Exception("Could not get accounting details of bank $bankleitzahl: ${result.toString()}"))
+                    log.error("Could not get accounting details of bank ${credentials.bankleitzahl}: ${result.toString()}", result.getJobStatus().exceptions)
+                    return AccountingEntries(false, error = Exception("Could not get accounting details of bank ${credentials.bankleitzahl}: ${result.toString()}"))
                 }
 
 
                 return AccountingEntries(true, saldo, mapAccountingEntries(result))
             }
             catch(e: Exception) {
-                log.error("Could not get accounting details for bank $bankleitzahl", e)
+                log.error("Could not get accounting details for bank ${credentials.bankleitzahl}", e)
                 return AccountingEntries(false, error = e)
             }
         }
@@ -191,15 +201,15 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
         return AccountingEntries(false, error = connection.error)
     }
 
-    protected open fun executeJobsForGetAccountingEntries(handle: HBCIHandler, account: Konto): Triple<HBCIJob, HBCIJob, HBCIExecStatus> {
+    protected open fun executeJobsForGetAccountingEntries(handle: HBCIHandler, account: Account): Triple<HBCIJob, HBCIJob, HBCIExecStatus> {
         // 1. Auftrag fuer das Abrufen des Saldos erzeugen
         val saldoJob = handle.newJob("SaldoReq")
-        saldoJob.setParam("my", account) // festlegen, welches Konto abgefragt werden soll.
+        saldoJob.setParam("my", account.info) // festlegen, welches Konto abgefragt werden soll.
         saldoJob.addToQueue() // Zur Liste der auszufuehrenden Auftraege hinzufuegen
 
         // 2. Auftrag fuer das Abrufen der Umsaetze erzeugen
         val umsatzJob = handle.newJob("KUmsAll")
-        umsatzJob.setParam("my", account) // festlegen, welches Konto abgefragt werden soll.
+        umsatzJob.setParam("my", account.info) // festlegen, welches Konto abgefragt werden soll.
         umsatzJob.addToQueue() // Zur Liste der auszufuehrenden Auftraege hinzufuegen
 
         // Hier koennen jetzt noch weitere Auftraege fuer diesen Bankzugang hinzugefuegt
@@ -346,9 +356,7 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
 
         try {
             entry.bookingDate = DateFormat.parse(subString)
-        } catch (e: Exception) {
-            log.info("Could not parse $subString from $line to a Date", e)
-        }
+        } catch (ignored: Exception) { }
     }
 
 
@@ -356,7 +364,7 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
      * Ueber diesen Callback kommuniziert HBCI4Java mit dem Benutzer und fragt die benoetigten
      * Informationen wie Benutzerkennung, PIN usw. ab.
      */
-    private class MyHBCICallback(private val bankleitzahl: String, private val customerId: String, private val pin: String) : AbstractHBCICallback() {
+    private class MyHBCICallback(private val credentials: AccountCredentials) : AbstractHBCICallback() {
         /**
          * @see org.kapott.hbci.callback.HBCICallback.log
          */
@@ -375,23 +383,23 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
             // Wir nehmen hier der Einfachheit halber direkt die PIN. In der Praxis
             // sollte hier aber ein staerkeres Passwort genutzt werden.
             // Die Ergebnis-Daten muessen in dem StringBuffer "retData" platziert werden.
-                HBCICallback.NEED_PASSPHRASE_LOAD, HBCICallback.NEED_PASSPHRASE_SAVE -> retData.replace(0, retData.length, pin)
+                HBCICallback.NEED_PASSPHRASE_LOAD, HBCICallback.NEED_PASSPHRASE_SAVE -> retData.replace(0, retData.length, credentials.pin)
 
             // PIN wird benoetigt
-                HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, pin)
+                HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, credentials.pin)
 
             // ADDED: Auswaehlen welches PinTan Verfahren verwendet werden soll
                 HBCICallback.NEED_PT_SECMECH -> retData.replace(0, retData.length, "911") // TODO: i set it to a fixed value here, ask user
 
             // BLZ wird benoetigt
-                HBCICallback.NEED_BLZ -> retData.replace(0, retData.length, bankleitzahl)
+                HBCICallback.NEED_BLZ -> retData.replace(0, retData.length, credentials.bankleitzahl)
 
             // Die Benutzerkennung
-                HBCICallback.NEED_USERID -> retData.replace(0, retData.length, customerId)
+                HBCICallback.NEED_USERID -> retData.replace(0, retData.length, credentials.customerId)
 
             // Die Kundenkennung. Meist identisch mit der Benutzerkennung.
             // Bei manchen Banken kann man die auch leer lassen
-                HBCICallback.NEED_CUSTOMERID -> retData.replace(0, retData.length, customerId)
+                HBCICallback.NEED_CUSTOMERID -> retData.replace(0, retData.length, credentials.customerId)
 
             // Manche Fehlermeldungen werden hier ausgegeben
                 HBCICallback.HAVE_ERROR -> log.error(msg)
@@ -406,7 +414,7 @@ open class Hbci4JavaBankingClient(val bankleitzahl: String, val customerId: Stri
          */
         override fun status(passport: HBCIPassport, statusTag: Int, o: Array<Any>?) {
             // So aehnlich wie log(String,int,Date,StackTraceElement) jedoch fuer Status-Meldungen.
-            log.info("New status for passport $passport: $statusTag $o")
+//            log.info("New status for passport $passport: $statusTag $o")
         }
 
     }
