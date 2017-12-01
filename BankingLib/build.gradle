@@ -21,6 +21,8 @@ dependencies {
 
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
 
+    compile "org.apache.commons:commons-csv:$commonsCsvVersion"
+
     compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 
