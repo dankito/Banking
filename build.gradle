@@ -1,10 +1,16 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 ext {
+    appVersionName = '1.0 Beta'
+
     kotlinVersion = '1.2.0'
     hbci4jVersion = '3.0.11'
     slf4jVersion = '1.7.25'
     jacksonVersion = '2.9.2'
+    commonsCsvVersion = '1.5'
+
+    tornadoFXVersion = '1.7.12'
+    tornadoFXControlsVersion = '1.0.6'
 
     junitVersion = '4.12'
     logbackVersion = '1.2.3'
