@@ -232,7 +232,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
     }
 
     private fun mapAccountingEntry(buchung: GVRKUms.UmsLine): AccountingEntry {
-        val entry = AccountingEntry(buchung.value, buchung.bdate, buchung.text, buchung.other, buchung.usage.joinToString(""))
+        val entry = AccountingEntry(buchung.value, buchung.bdate, buchung.valuta, buchung.text, buchung.other, buchung.usage.joinToString(""))
 
         mapUsage(buchung, entry)
 
@@ -290,11 +290,19 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
     }
 
     private fun setUsageLineValue(entry: AccountingEntry, lastUsageLineType: UsageLineType, typeValue: String) {
+        entry.parsedUsages.add(typeValue)
+
         when(lastUsageLineType) {
             UsageLineType.EREF -> entry.endToEndReference = typeValue
+            UsageLineType.KREF -> entry.kundenreferenz = typeValue
+            UsageLineType.MREF -> entry.mandatsreferenz = typeValue
+            UsageLineType.CRED -> entry.creditorIdentifier = typeValue
             UsageLineType.DEBT -> entry.originatorsIdentificationCode = typeValue
+            UsageLineType.COAM -> entry.compensationAmount = typeValue
+            UsageLineType.OAMT -> entry.originalAmount = typeValue
             UsageLineType.SVWZ -> entry.sepaVerwendungszweck = typeValue
             UsageLineType.ABWA -> entry.abweichenderAuftraggeber = typeValue
+            UsageLineType.ABWE -> entry.abweichenderZahlungsempfaenger = typeValue
             UsageLineType.NoSpecialType -> entry.usageWithNoSpecialType = typeValue
         }
     }
