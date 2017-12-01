@@ -356,7 +356,9 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
 
         try {
             entry.bookingDate = DateFormat.parse(subString)
-        } catch (ignored: Exception) { }
+        } catch (e: Exception) {
+            log.debug("Could not parse $subString from $line to a Date", e)
+        }
     }
 
 
@@ -414,7 +416,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
          */
         override fun status(passport: HBCIPassport, statusTag: Int, o: Array<Any>?) {
             // So aehnlich wie log(String,int,Date,StackTraceElement) jedoch fuer Status-Meldungen.
-//            log.info("New status for passport $passport: $statusTag $o")
+            log.debug("New status for passport $passport: $statusTag $o")
         }
 
     }
