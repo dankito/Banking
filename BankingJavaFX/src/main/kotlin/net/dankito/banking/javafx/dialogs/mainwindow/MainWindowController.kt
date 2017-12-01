@@ -82,7 +82,9 @@ class MainWindowController : Controller() {
 
 
     fun addAccountAsync(credentials: AccountCredentials, callback: (GetAccountsResult) -> Unit) {
-        getClientForAccount(credentials).getAccountsAsync { result ->
+        val client = getClientForAccount(credentials)
+        client.getAccountsAsync { result ->
+            storeClientIfSuccessful(client, credentials, result)
             retrievedGetAccountsResult(result)
 
             callback(result)
@@ -106,7 +108,9 @@ class MainWindowController : Controller() {
     fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         accountEntries[account]?.let { callback(it) }
 
-        getClientForAccount(account).getAccountingEntriesAsync(account) { result ->
+        val client = getClientForAccount(account)
+        client.getAccountingEntriesAsync(account) { result ->
+            storeClientIfSuccessful(client, account.credentials, result)
             retrievedAccountingEntries(account, result)
 
             callback(result)
@@ -150,9 +154,14 @@ class MainWindowController : Controller() {
         clientsForAccounts[credentials]?.let { return it }
 
         val newClient = Hbci4JavaBankingClient(credentials)
-        clientsForAccounts.put(credentials, newClient)
 
         return newClient
+    }
+
+    private fun storeClientIfSuccessful(client: IBankingClient, credentials: AccountCredentials, result: ResultBase) {
+        if(result.successful) {
+            clientsForAccounts.put(credentials, client)
+        }
     }
 
 
