@@ -12,6 +12,7 @@ import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
 import net.dankito.banking.javafx.util.JavaFXDialogService
 import net.dankito.banking.model.AccountCredentials
 import net.dankito.banking.model.GetAccountsResult
+import net.dankito.banking.util.ExceptionHelper
 import tornadofx.*
 
 
@@ -38,6 +39,8 @@ class AddAccountDialog : DialogFragment() {
     val controller: MainWindowController by param()
 
     private val dialogService = JavaFXDialogService()
+
+    private val exceptionHelper = ExceptionHelper()
 
 
     override val root = vbox {
@@ -158,13 +161,7 @@ class AddAccountDialog : DialogFragment() {
     }
 
     private fun showError(credentials: AccountCredentials, error: Exception) {
-        var innerException = error
-        var depth = 0
-
-        while(innerException.cause is Exception && depth < 3) {
-            innerException = innerException.cause as Exception
-            depth++
-        }
+        val innerException = exceptionHelper.getInnerException(error)
 
         val errorMessage = String.format(messages["error.message.could.not.add.account"], credentials.bankleitzahl, credentials.customerId, innerException.localizedMessage)
 
