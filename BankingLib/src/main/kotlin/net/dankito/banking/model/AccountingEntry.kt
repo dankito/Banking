@@ -62,4 +62,9 @@ class AccountingEntry(val value: Value, var bookingDate: Date, val valutaDate: D
         return null
     }
 
+
+    override fun toString(): String {
+        return "$value ${other.name}: ${parsedUsages}"
+    }
+
 }

@@ -7,4 +7,9 @@ open class Account(val info: Konto, val credentials: AccountCredentials) { // TO
 
     internal constructor() : this(Konto(), AccountCredentials()) // for Jackson
 
+
+    override fun toString(): String {
+        return "${info.number} (${info.type})"
+    }
+
 }

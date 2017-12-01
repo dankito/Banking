@@ -21,4 +21,9 @@ open class BankInfo(val info: BankInfo, val accounts: List<Account>) { // TODO: 
 
     internal constructor() : this(createBankInfoViaReflection(), listOf()) // for Jackson
 
+
+    override fun toString(): String {
+        return "${info.name}"
+    }
+
 }
