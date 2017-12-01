@@ -416,7 +416,8 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
          */
         override fun status(passport: HBCIPassport, statusTag: Int, o: Array<Any>?) {
             // So aehnlich wie log(String,int,Date,StackTraceElement) jedoch fuer Status-Meldungen.
-            log.debug("New status for passport $passport: $statusTag $o")
+            val param = if(o == null) "null" else o.joinToString()
+            log.debug("New status for passport $passport: $statusTag $param")
         }
 
     }
