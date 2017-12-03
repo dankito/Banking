@@ -4,6 +4,7 @@ import javafx.beans.binding.ObjectBinding
 import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TextField
@@ -13,8 +14,11 @@ import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import javafx.util.Callback
 import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
+import net.dankito.banking.javafx.util.JavaFXDialogService
+import net.dankito.banking.model.Account
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
+import net.dankito.banking.util.ExceptionHelper
 import tornadofx.*
 import java.text.DateFormat
 
@@ -30,10 +34,20 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
     private var balanceLabel: Label by singleAssign()
 
+    private var updateAccountingEntriesButton: Button by singleAssign()
+
+
+    private var currentSelectedAccount: Account? = null
 
     private val entriesOfSelectedAccount = FXCollections.observableArrayList<AccountingEntry>()
 
     private val entriesToShow = FXCollections.observableArrayList<AccountingEntry>()
+
+
+    private val dialogService = JavaFXDialogService()
+
+    private val exceptionHelper = ExceptionHelper()
+
 
 
     override val root = vbox {
@@ -69,6 +83,17 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                     alignment = Pos.CENTER_RIGHT
                 }
                 add(balanceLabel)
+
+                updateAccountingEntriesButton = button("Update") { // TODO: set icon
+
+                    setOnMouseClicked { clickedButtonUpdateAccountingEntries(it) }
+
+                    hboxConstraints {
+                        marginLeft = 6.0
+                        marginRight = 4.0
+                    }
+                }
+                add(updateAccountingEntriesButton)
             }
         }
 
@@ -114,6 +139,14 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         }
     }
 
+    private fun clickedButtonUpdateAccountingEntries(event: MouseEvent) {
+        if(event.button == MouseButton.PRIMARY && event.clickCount == 1) {
+            currentSelectedAccount?.let { account ->
+                retrieveAndShowEntriesForAccount(account)
+            }
+        }
+    }
+
     private fun tableClicked(event: MouseEvent, selectedItem: AccountingEntry?) {
         if(event.clickCount == 2 && event.button == MouseButton.PRIMARY) {
             if(selectedItem != null) {
@@ -153,12 +186,40 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
     }
 
 
-    fun setEntriesOfCurrentAccount(accountingEntries: AccountingEntries) {
+    fun retrieveAndShowEntriesForAccount(account: Account) {
+        controller.getAccountingEntriesAsync(account) { result ->
+            runLater { retrievedAccountingEntriesResult(account, result) }
+        }
+    }
+
+    private fun retrievedAccountingEntriesResult(account: Account, result: AccountingEntries) {
+        if(result.successful) {
+            setEntriesOfCurrentAccount(account, result)
+        }
+        else {
+            result.error?.let { showCouldNotRetrieveAccountingEntriesError(account, it) }
+        }
+    }
+
+    private fun setEntriesOfCurrentAccount(account: Account, accountingEntries: AccountingEntries) {
+        currentSelectedAccount = account
         entriesOfSelectedAccount.setAll(accountingEntries.entries)
 
         searchEntries()
 
         balanceLabel.text = accountingEntries.saldo?.toString() ?: ""
+    }
+
+    private fun showCouldNotRetrieveAccountingEntriesError(account: Account, error: Exception) {
+        val innerException = exceptionHelper.getInnerException(error)
+
+        val message = String.format(messages["error.message.could.not.retrieve.accounting.entries"], account.credentials.customerId, innerException.localizedMessage)
+
+        showError(message, error)
+    }
+
+    private fun showError(message: String, exception: Exception) {
+        dialogService.showErrorMessage(message, null, exception, currentStage)
     }
 
 }

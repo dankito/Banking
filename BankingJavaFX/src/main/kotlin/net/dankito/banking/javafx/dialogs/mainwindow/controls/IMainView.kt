@@ -7,6 +7,4 @@ interface IMainView {
 
     fun showAccounts(bankInfos: List<BankInfo>)
 
-    fun showError(message: String, exception: Exception)
-
 }
