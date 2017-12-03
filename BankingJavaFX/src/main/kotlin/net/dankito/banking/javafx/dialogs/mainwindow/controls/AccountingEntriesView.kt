@@ -7,9 +7,13 @@ import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TextField
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import javafx.stage.StageStyle
 import javafx.util.Callback
+import net.dankito.banking.javafx.dialogs.accountingentriesdetails.AccountingEntriesDetailsDialog
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
 import tornadofx.*
@@ -106,6 +110,17 @@ class AccountingEntriesView : View() {
             columnResizePolicy = SmartResize.POLICY
 
             vgrow = Priority.ALWAYS
+
+            setOnMouseClicked { tableClicked(it, this.selectionModel.selectedItem) }
+        }
+    }
+
+    private fun tableClicked(event: MouseEvent, selectedItem: AccountingEntry?) {
+        if(event.clickCount == 2 && event.button == MouseButton.PRIMARY) {
+            if(selectedItem != null) {
+                find(AccountingEntriesDetailsDialog::class.java, mapOf(AccountingEntriesDetailsDialog::entry to selectedItem))
+                        .show(messages["accounting.entries.details.title"], stageStyle = StageStyle.UTILITY, owner = currentStage)
+            }
         }
     }
 
