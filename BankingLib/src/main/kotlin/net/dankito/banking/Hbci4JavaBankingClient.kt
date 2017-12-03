@@ -235,6 +235,8 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
             entries.add(mapAccountingEntry(buchung))
         }
 
+        log.debug("Retrieved ${result.flatData.size} accounting entries")
+
         return entries.sortedByDescending { it.bookingDate }
     }
 
