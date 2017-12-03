@@ -26,6 +26,9 @@ dependencies {
 
     compile "ch.qos.logback:logback-core:$logbackVersion"
     compile "ch.qos.logback:logback-classic:$logbackVersion"
+
+
+    testCompile "junit:junit:$junitVersion"
 }
 
 

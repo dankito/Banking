@@ -2,10 +2,13 @@ package net.dankito.banking.javafx.dialogs.mainwindow.controls
 
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Priority
+import javafx.stage.StageStyle
+import net.dankito.banking.javafx.dialogs.accountdetails.AccountDetailsDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
 import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsAccountTreeItem
 import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsRootTreeItem
@@ -55,15 +58,17 @@ class AccountsView(private val controller: MainWindowController) : View() {
             root.isExpanded = true
             isShowRoot = false
 
+            contextmenu {
+                item(messages["main.window.accounts.context.menu.info"]) {
+                    action {
+                        this@treeview.selectionModel.selectedItem?.let { showInfo(it) }
+                    }
+                }
+            }
+
             vboxConstraints {
                 vGrow = Priority.ALWAYS
             }
-        }
-    }
-
-    private fun clickedAddAccount(event: MouseEvent) {
-        if(event.button == MouseButton.PRIMARY) {
-            controller.showAddAccountDialog()
         }
     }
 
@@ -83,6 +88,20 @@ class AccountsView(private val controller: MainWindowController) : View() {
             if(trvwAccounts.root.children.size > 0 && trvwAccounts.root.children[0].children.size > 0) { // select first Account TreeItem
                 trvwAccounts.selectionModel.select(trvwAccounts.root.children[0].children[0])
             }
+        }
+    }
+
+
+    private fun clickedAddAccount(event: MouseEvent) {
+        if(event.button == MouseButton.PRIMARY) {
+            controller.showAddAccountDialog()
+        }
+    }
+
+    private fun showInfo(treeItem: TreeItem<String>) {
+        if(treeItem is AccountsAccountTreeItem) {
+            find(AccountDetailsDialog::class.java, mapOf(AccountDetailsDialog::account to treeItem.account))
+                    .show(messages["account.details.name.title"], stageStyle = StageStyle.UTILITY, owner = currentStage)
         }
     }
 
