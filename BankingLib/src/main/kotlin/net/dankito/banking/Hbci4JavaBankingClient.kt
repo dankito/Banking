@@ -49,6 +49,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
         // wenn der Parameter "client.passport.PinTan.init" den Wert "1" hat (siehe unten).
         // Wir speichern die Datei der Einfachheit halber im aktuellen Verzeichnis.
+        dataDirectory.mkdirs()
         val passportFile = File(dataDirectory,"passport.dat")
 
         // Wir setzen die Kernel-Parameter zur Laufzeit. Wir koennten sie alternativ
