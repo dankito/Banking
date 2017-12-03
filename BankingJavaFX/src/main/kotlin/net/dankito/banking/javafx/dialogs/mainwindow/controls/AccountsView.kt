@@ -32,7 +32,7 @@ class AccountsView(private val controller: MainWindowController) : View() {
             minHeight = 36.0
             maxHeight = 36.0
 
-            left = label(messages["main.window.accounts.label"]) {
+            left = label(messages["accounts.view.accounts.label"]) {
                 borderpaneConstraints {
                     alignment = Pos.CENTER_LEFT
                     marginLeft = 4.0
@@ -59,7 +59,7 @@ class AccountsView(private val controller: MainWindowController) : View() {
             isShowRoot = false
 
             contextmenu {
-                item(messages["main.window.accounts.context.menu.info"]) {
+                item(messages["accounts.view.context.menu.info"]) {
                     action {
                         this@treeview.selectionModel.selectedItem?.let { showInfo(it) }
                     }

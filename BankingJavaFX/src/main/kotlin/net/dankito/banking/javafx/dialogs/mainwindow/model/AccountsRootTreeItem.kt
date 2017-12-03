@@ -7,7 +7,7 @@ import net.dankito.banking.model.BankInfo
 import tornadofx.*
 
 
-class AccountsRootTreeItem(bankInfos: ObservableList<BankInfo>) : AccountsTreeItemBase(FX.messages["main.window.accounts.label"]) {
+class AccountsRootTreeItem(bankInfos: ObservableList<BankInfo>) : AccountsTreeItemBase(FX.messages["accounts.view.accounts.label"]) {
 
     init {
         bankInfos.forEach { bankInfo ->
