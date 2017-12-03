@@ -12,6 +12,7 @@ import net.dankito.banking.persistence.JsonAccountSettingsPersister
 import org.slf4j.LoggerFactory
 import tornadofx.*
 import java.io.File
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
@@ -132,8 +133,41 @@ class MainWindowController : Controller() {
             return result
         }
         else {
-            return result // TODO
+            return mergeEntries(previousEntries, result)
         }
+    }
+
+    private fun mergeEntries(previousEntries: AccountingEntries, newEntries: AccountingEntries): AccountingEntries {
+        val newEntriesOldestFirst = newEntries.entries.sortedBy { it.bookingDate }
+        val mutableNewEntries = newEntries.entries.toMutableList()
+
+        for(i in previousEntries.entries.size - 1 downTo 0) { // only check older ones up to the time the first match is found
+            val previousEntry = previousEntries.entries[i]
+            if(containsEntry(newEntriesOldestFirst, previousEntry) == false) {
+                mutableNewEntries.add(previousEntry)
+            }
+            else {
+                break
+            }
+        }
+
+        newEntries.entries = mutableNewEntries.sortedByDescending { it.bookingDate }
+        return newEntries
+    }
+
+    private fun containsEntry(entries: List<AccountingEntry>, entryToCheck: AccountingEntry): Boolean {
+        entries.forEach { entry ->
+            if(entry.bookingDate == entryToCheck.bookingDate && entry.valutaDate == entryToCheck.valutaDate &&
+                    entry.value.bigDecimalValue == entryToCheck.value.bigDecimalValue && entry.value.curr == entryToCheck.value.curr &&
+                    entry.usage == entryToCheck.usage &&
+                    entry.other.name == entryToCheck.other.name &&
+                    entry.other.iban == entryToCheck.other.iban && entry.other.bic == entryToCheck.other.bic &&
+                    entry.other.blz == entryToCheck.other.blz && entry.other.number == entryToCheck.other.number) {
+                return true
+            }
+        }
+
+        return false
     }
 
     private fun getAccountEntriesFile(account: Account): File {

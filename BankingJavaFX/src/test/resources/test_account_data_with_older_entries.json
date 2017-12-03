@@ -1,0 +1,335 @@
+{
+  "successful": true,
+  "error": null,
+  "saldo": {
+    "value": 2800723,
+    "curr": "EUR"
+  },
+  "entries": [
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": null,
+      "abweichenderAuftraggeber": null,
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": "Entgeltabrechnungsiehe Anlage",
+      "parsedUsages": [
+        "Entgeltabrechnungsiehe Anlage"
+      ],
+      "value": {
+        "value": -269,
+        "curr": "EUR"
+      },
+      "bookingDate": 1512082800000,
+      "valutaDate": 1512082800000,
+      "type": "ENTGELTABSCHLUSS",
+      "other": {
+        "country": null,
+        "blz": "72051210",
+        "number": "",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": null,
+        "iban": null
+      },
+      "usage": "Entgeltabrechnungsiehe Anlage"
+    },
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": "Miete",
+      "abweichenderAuftraggeber": null,
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": null,
+      "parsedUsages": [
+        "Miete"
+      ],
+      "value": {
+        "value": -35000,
+        "curr": "EUR"
+      },
+      "bookingDate": 1512082800000,
+      "valutaDate": 1512082800000,
+      "type": "DAUERAUFTRAG",
+      "other": {
+        "country": null,
+        "blz": "KKSMDEMMXXX",
+        "number": "DE9876500000012345053",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "Entmieterfuerst",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": "KKSMDEMMXXX",
+        "iban": "DE9876500000012345053"
+      },
+      "usage": "SVWZ+Miete"
+    },
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": "Mit herzlichem Dank DATUM 29.11.2017, 12.59 UHR1.TAN 587978",
+      "abweichenderAuftraggeber": null,
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": null,
+      "parsedUsages": [
+        "Mit herzlichem Dank DATUM 29.11.2017, 12.59 UHR1.TAN 587978"
+      ],
+      "value": {
+        "value": -1516,
+        "curr": "EUR"
+      },
+      "bookingDate": 1511956740000,
+      "valutaDate": 1511910000000,
+      "type": "ONLINE-UEBERWEISUNG",
+      "other": {
+        "country": null,
+        "blz": "KLMNOPQRSTU",
+        "number": "DE12345678901234567890",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "Alice Bäcker",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": "KLMNOPQRSTU",
+        "iban": "DE12345678901234567890"
+      },
+      "usage": "SVWZ+Mit herzlichem DankDATUM 29.11.2017, 12.59 UHR1.TAN 587978"
+    },
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": "Mit herzlichem Dank DATUM 29.11.2017, 12.58 UHR1.TAN 588957",
+      "abweichenderAuftraggeber": null,
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": null,
+      "parsedUsages": [
+        "Mit herzlichem Dank DATUM 29.11.2017, 12.58 UHR1.TAN 588957"
+      ],
+      "value": {
+        "value": -1516,
+        "curr": "EUR"
+      },
+      "bookingDate": 1511956680000,
+      "valutaDate": 1511910000000,
+      "type": "ONLINE-UEBERWEISUNG",
+      "other": {
+        "country": null,
+        "blz": "GENODGROETZ",
+        "number": "DE98765432109876543210",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "Anna Liebe",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": "GENODGROETZ",
+        "iban": "DE98765432109876543210"
+      },
+      "usage": "SVWZ+Mit herzlichem DankDATUM 29.11.2017, 12.58 UHR1.TAN 588957"
+    },
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": "2017-11-28T15.13.17 Karte3 2019-12",
+      "abweichenderAuftraggeber": "FL 016//ABZOCKERBANK MINGA/DE",
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": null,
+      "parsedUsages": [
+        "2017-11-28T15.13.17 Karte3 2019-12",
+        "FL 016//ABZOCKERBANK MINGA/DE"
+      ],
+      "value": {
+        "value": -10000,
+        "curr": "EUR"
+      },
+      "bookingDate": 1511910000000,
+      "valutaDate": 1511910000000,
+      "type": "AUSZAHLUNG",
+      "other": {
+        "country": null,
+        "blz": "KLMUDEMMXXX",
+        "number": "DE98765432109876543210",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "ABZOCKERBANK MINGA",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": "KLMUDEMMXXX",
+        "iban": "DE98765432109876543210"
+      },
+      "usage": "SVWZ+2017-11-28T15.13.17 Karte3 2019-12ABWA+FL 016//ABZOCKERBANK MINGA/DE"
+    },
+    {
+      "endToEndReference": "132529269330222017112825292693",
+      "kundenreferenz": null,
+      "mandatsreferenz": "000001065754",
+      "creditorIdentifier": "Knecht",
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": "Beitrag 11/17 12345678 faellig 28.11.17",
+      "abweichenderAuftraggeber": "Kroankakasse",
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": null,
+      "parsedUsages": [
+        "132529269330222017112825292693",
+        "000001065754",
+        "Knecht",
+        "Beitrag 11/17 12345678 faellig 28.11.17",
+        "Kroankakasse"
+      ],
+      "value": {
+        "value": -14881,
+        "curr": "EUR"
+      },
+      "bookingDate": 1511823600000,
+      "valutaDate": 1511823600000,
+      "type": "FOLGELASTSCHRIFT",
+      "other": {
+        "country": null,
+        "blz": "HOELZGROETZ",
+        "number": "DE908010908010",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "Kroankakasse",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": "HOELZGROETZ",
+        "iban": "DE908010908010"
+      },
+      "usage": "EREF+132529269330222017112825292693MREF+000001065754CRED+DE56LKK00000143200SVWZ+Beitrag 11/17 12345678 faellig 28.11.17ABWA+Kroankakasse"
+    },
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": null,
+      "abweichenderAuftraggeber": null,
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": "Liebe",
+      "parsedUsages": [
+        "Liebe"
+      ],
+      "value": {
+        "value": 0,
+        "curr": "EUR"
+      },
+      "bookingDate": 1446418800000,
+      "valutaDate": 1446418800000,
+      "type": "SONSTIGER EINZUG",
+      "other": {
+        "country": null,
+        "blz": "30050000",
+        "number": "1134717",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "DIE WELT SAGT DANKE",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": null,
+        "iban": null
+      },
+      "usage": "Liebe"
+    },
+    {
+      "endToEndReference": null,
+      "kundenreferenz": null,
+      "mandatsreferenz": null,
+      "creditorIdentifier": null,
+      "originatorsIdentificationCode": null,
+      "compensationAmount": null,
+      "originalAmount": null,
+      "sepaVerwendungszweck": null,
+      "abweichenderAuftraggeber": null,
+      "abweichenderZahlungsempfaenger": null,
+      "usageWithNoSpecialType": "Kuscheln",
+      "parsedUsages": [
+        "Kuscheln"
+      ],
+      "value": {
+        "value": 0,
+        "curr": "EUR"
+      },
+      "bookingDate": 1446332400000,
+      "valutaDate": 1446332400000,
+      "type": "SONSTIGER EINZUG",
+      "other": {
+        "country": null,
+        "blz": "30050000",
+        "number": "1134717",
+        "subnumber": null,
+        "acctype": null,
+        "type": null,
+        "curr": "EUR",
+        "customerid": null,
+        "name": "DIE WELT SAGT DANKE",
+        "name2": null,
+        "limit": null,
+        "allowedGVs": null,
+        "bic": null,
+        "iban": null
+      },
+      "usage": "Kuscheln"
+    }
+  ]
+}
