@@ -21,7 +21,7 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
 
-open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankingClient {
+open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataDirectory: File) : IBankingClient {
 
     companion object {
         private val DateStartString = "DATUM "
@@ -49,7 +49,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
         // wenn der Parameter "client.passport.PinTan.init" den Wert "1" hat (siehe unten).
         // Wir speichern die Datei der Einfachheit halber im aktuellen Verzeichnis.
-        val passportFile = File("testpassport.dat")
+        val passportFile = File(dataDirectory,"passport.dat")
 
         // Wir setzen die Kernel-Parameter zur Laufzeit. Wir koennten sie alternativ
         // auch oben in "props" setzen.
@@ -405,7 +405,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials) : IBankin
                 HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, credentials.pin)
 
             // ADDED: Auswaehlen welches PinTan Verfahren verwendet werden soll
-                HBCICallback.NEED_PT_SECMECH -> retData.replace(0, retData.length, "911") // TODO: i set it to a fixed value here, ask user
+                HBCICallback.NEED_PT_SECMECH -> retData.replace(0, retData.length, "912") // TODO: i set it to a fixed value here, ask user
 
             // BLZ wird benoetigt
                 HBCICallback.NEED_BLZ -> retData.replace(0, retData.length, credentials.bankleitzahl)

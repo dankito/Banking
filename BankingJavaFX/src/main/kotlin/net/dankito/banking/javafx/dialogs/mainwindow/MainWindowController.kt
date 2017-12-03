@@ -153,7 +153,7 @@ class MainWindowController : Controller() {
     private fun getClientForAccount(credentials: AccountCredentials): IBankingClient {
         clientsForAccounts[credentials]?.let { return it }
 
-        val newClient = Hbci4JavaBankingClient(credentials)
+        val newClient = Hbci4JavaBankingClient(credentials, DataFolder)
 
         return newClient
     }
