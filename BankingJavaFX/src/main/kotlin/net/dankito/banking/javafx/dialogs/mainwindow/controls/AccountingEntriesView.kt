@@ -63,6 +63,8 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
             }
 
             searchTextField = textfield {
+                isDisable = true
+
                 textProperty().addListener { _, _, newValue -> searchEntries(newValue) }
             }
             center = searchTextField
@@ -85,6 +87,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                 add(balanceLabel)
 
                 updateAccountingEntriesButton = button("Update") { // TODO: set icon
+                    isDisable = true
 
                     setOnMouseClicked { clickedButtonUpdateAccountingEntries(it) }
 
@@ -187,22 +190,28 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
 
     fun retrieveAndShowEntriesForAccount(account: Account) {
+        currentSelectedAccount = account
+
         controller.getAccountingEntriesAsync(account) { result ->
             runLater { retrievedAccountingEntriesResult(account, result) }
+        }
+
+        runLater {
+            searchTextField.isDisable = false
+            updateAccountingEntriesButton.isDisable = false
         }
     }
 
     private fun retrievedAccountingEntriesResult(account: Account, result: AccountingEntries) {
         if(result.successful) {
-            setEntriesOfCurrentAccount(account, result)
+            setEntriesOfCurrentAccount(result)
         }
         else {
             result.error?.let { showCouldNotRetrieveAccountingEntriesError(account, it) }
         }
     }
 
-    private fun setEntriesOfCurrentAccount(account: Account, accountingEntries: AccountingEntries) {
-        currentSelectedAccount = account
+    private fun setEntriesOfCurrentAccount(accountingEntries: AccountingEntries) {
         entriesOfSelectedAccount.setAll(accountingEntries.entries)
 
         searchEntries()
