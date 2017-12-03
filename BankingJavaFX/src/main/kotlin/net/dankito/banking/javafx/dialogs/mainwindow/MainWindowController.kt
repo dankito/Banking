@@ -5,8 +5,10 @@ import net.dankito.banking.IBankingClient
 import net.dankito.banking.javafx.dialogs.addaccount.AddAccountDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.controls.IMainView
 import net.dankito.banking.model.*
-import net.dankito.banking.persistence.*
-import org.kapott.hbci.structures.Value
+import net.dankito.banking.persistence.IAccountDataPersister
+import net.dankito.banking.persistence.IAccountSettingsPersister
+import net.dankito.banking.persistence.JsonAccountDataPersister
+import net.dankito.banking.persistence.JsonAccountSettingsPersister
 import org.slf4j.LoggerFactory
 import tornadofx.*
 import java.io.File
@@ -23,7 +25,7 @@ class MainWindowController : Controller() {
         private const val AccountsFilename = "accounts.json"
         private val AccountsFile = File(DataFolder, AccountsFilename)
 
-        private val logger = LoggerFactory.getLogger(MainWindowController::class.java)
+        private val logger = LoggerFactory.getLogger(MainWindowController::class.java) // cannot name it logger as there's already a log named instance variable in Controller class
     }
 
 
@@ -39,9 +41,7 @@ class MainWindowController : Controller() {
 
     private var accountsPersister: IAccountSettingsPersister = JsonAccountSettingsPersister()
 
-    private var persistedAccountEntriesImporter: IImporter = CAMTCsvFileImporterExporter()
-
-    private var persistedAccountEntriesExporter: IExporter = persistedAccountEntriesImporter as CAMTCsvFileImporterExporter
+    private var accountDataPersister: IAccountDataPersister = JsonAccountDataPersister()
 
     private var bankInfos: MutableList<BankInfo> = ArrayList()
 
@@ -73,8 +73,8 @@ class MainWindowController : Controller() {
 
     private fun readPersistedAccountEntries(account: Account) {
         try {
-            val entries = persistedAccountEntriesImporter.importEntries(getAccountEntriesFile(account))
-            accountEntries.put(account, AccountingEntries(true, Value(), entries))
+            val accountingEntries = accountDataPersister.getPersistedAccountData(getAccountEntriesFile(account))
+            accountEntries.put(account, accountingEntries)
         } catch(e: Exception) {
             logger.error("Could not read persisted entries for account $account", e)
         }
@@ -121,7 +121,7 @@ class MainWindowController : Controller() {
         if(result.successful) {
             accountEntries.put(account, mergeEntries(account, result))
 
-            persistedAccountEntriesExporter.exportAccountEntriesAsync(getAccountEntriesFile(account), account, result.entries) { }
+            accountDataPersister.persistAccountData(getAccountEntriesFile(account), result)
         }
     }
 
@@ -137,7 +137,7 @@ class MainWindowController : Controller() {
     }
 
     private fun getAccountEntriesFile(account: Account): File {
-        val filename = "${account.info.number}_${account.info.name + (account.info.name2 ?: "")}_${account.info.type}.csv".replace(" ", "_")
+        val filename = "${account.info.number}_${account.info.name + (account.info.name2 ?: "")}_${account.info.type}.json".replace(" ", "_")
 
         val file = File(File(DataFolder, account.info.blz), filename)
         file.parentFile.mkdirs()
