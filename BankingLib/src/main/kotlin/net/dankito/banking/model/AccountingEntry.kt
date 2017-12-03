@@ -32,6 +32,9 @@ class AccountingEntry(val value: Value, var bookingDate: Date, val valutaDate: D
     val parsedUsages = ArrayList<String>()
 
 
+    internal constructor() : this(Value(), Date(0), Date(0), "", Konto(), "")
+
+
     fun showOtherName(): Boolean {
         return other.name.isNullOrBlank() == false && type != "ENTGELTABSCHLUSS" && type != "AUSZAHLUNG"
     }
