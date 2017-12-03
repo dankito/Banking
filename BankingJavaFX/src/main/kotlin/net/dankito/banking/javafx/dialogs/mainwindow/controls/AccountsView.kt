@@ -9,8 +9,10 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Priority
 import javafx.stage.StageStyle
 import net.dankito.banking.javafx.dialogs.accountdetails.AccountDetailsDialog
+import net.dankito.banking.javafx.dialogs.bankdetails.BankDetailsDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
 import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsAccountTreeItem
+import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsBankInfoTreeItem
 import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsRootTreeItem
 import net.dankito.banking.model.Account
 import net.dankito.banking.model.BankInfo
@@ -99,7 +101,11 @@ class AccountsView(private val controller: MainWindowController) : View() {
     }
 
     private fun showInfo(treeItem: TreeItem<String>) {
-        if(treeItem is AccountsAccountTreeItem) {
+        if(treeItem is AccountsBankInfoTreeItem) {
+            find(BankDetailsDialog::class.java, mapOf(BankDetailsDialog::bankInfo to treeItem.bankInfo))
+                    .show(messages["bank.details.name.title"], stageStyle = StageStyle.UTILITY, owner = currentStage)
+        }
+        else if(treeItem is AccountsAccountTreeItem) {
             find(AccountDetailsDialog::class.java, mapOf(AccountDetailsDialog::account to treeItem.account))
                     .show(messages["account.details.name.title"], stageStyle = StageStyle.UTILITY, owner = currentStage)
         }
