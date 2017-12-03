@@ -1,6 +1,7 @@
 package net.dankito.banking.javafx.dialogs.mainwindow.controls
 
 import javafx.geometry.Insets
+import javafx.geometry.Pos
 import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountingEntryUsageViewModel
 import net.dankito.banking.javafx.util.FXUtils
 import net.dankito.banking.model.AccountingEntry
@@ -18,6 +19,9 @@ class UsageCellFragment : TableCellFragment<AccountingEntry, AccountingEntry>() 
 
 
     override val root = vbox {
+        prefHeight = 94.0
+        alignment = Pos.CENTER_LEFT
+
         label(entry.type) {
             vboxConstraints {
                 margin = LabelMargin
