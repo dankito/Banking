@@ -1,8 +1,12 @@
 package net.dankito.banking.javafx.dialogs.mainwindow
 
+import javafx.stage.StageStyle
 import net.dankito.banking.Hbci4JavaBankingClient
 import net.dankito.banking.IBankingClient
+import net.dankito.banking.javafx.dialogs.accountdetails.AccountDetailsDialog
+import net.dankito.banking.javafx.dialogs.accountingentriesdetails.AccountingEntriesDetailsDialog
 import net.dankito.banking.javafx.dialogs.addaccount.AddAccountDialog
+import net.dankito.banking.javafx.dialogs.bankdetails.BankDetailsDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.controls.IMainView
 import net.dankito.banking.model.*
 import net.dankito.banking.persistence.IAccountDataPersister
@@ -202,6 +206,21 @@ class MainWindowController : Controller() {
     // TODO: move to router
     fun showAddAccountDialog() {
         find(AddAccountDialog::class.java, mapOf(AddAccountDialog::controller to this)).show(FX.messages["add.account.dialog.title"], owner = primaryStage)
+    }
+
+    fun showBankDetailsDialog(bankInfo: BankInfo) {
+        find(BankDetailsDialog::class.java, mapOf(BankDetailsDialog::bankInfo to bankInfo))
+                .show(messages["bank.details.name.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
+    }
+
+    fun showAccountDetailsDialog(account: Account) {
+        find(AccountDetailsDialog::class.java, mapOf(AccountDetailsDialog::account to account))
+                .show(messages["account.details.name.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
+    }
+
+    fun showAccountingEntriesDetailsDialog(entry: AccountingEntry) {
+        find(AccountingEntriesDetailsDialog::class.java, mapOf(AccountingEntriesDetailsDialog::entry to entry))
+                .show(messages["accounting.entries.details.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
     }
 
 }

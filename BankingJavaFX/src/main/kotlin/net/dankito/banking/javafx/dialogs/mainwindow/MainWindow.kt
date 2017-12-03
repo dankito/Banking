@@ -40,7 +40,7 @@ class MainWindow : View(messages["main.window.title"]), IMainView {
                 accountsView = AccountsView(controller)
                 add(accountsView.root)
 
-                accountingEntriesView = AccountingEntriesView()
+                accountingEntriesView = AccountingEntriesView(controller)
                 add(accountingEntriesView)
             }
 

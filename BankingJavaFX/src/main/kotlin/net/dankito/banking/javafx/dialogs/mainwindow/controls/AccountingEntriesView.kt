@@ -11,16 +11,15 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
-import javafx.stage.StageStyle
 import javafx.util.Callback
-import net.dankito.banking.javafx.dialogs.accountingentriesdetails.AccountingEntriesDetailsDialog
+import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
 import tornadofx.*
 import java.text.DateFormat
 
 
-class AccountingEntriesView : View() {
+class AccountingEntriesView(private val controller: MainWindowController) : View() {
 
     companion object {
         private val BookingDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
@@ -118,8 +117,7 @@ class AccountingEntriesView : View() {
     private fun tableClicked(event: MouseEvent, selectedItem: AccountingEntry?) {
         if(event.clickCount == 2 && event.button == MouseButton.PRIMARY) {
             if(selectedItem != null) {
-                find(AccountingEntriesDetailsDialog::class.java, mapOf(AccountingEntriesDetailsDialog::entry to selectedItem))
-                        .show(messages["accounting.entries.details.title"], stageStyle = StageStyle.UTILITY, owner = currentStage)
+                controller.showAccountingEntriesDetailsDialog(selectedItem)
             }
         }
     }
