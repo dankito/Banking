@@ -92,7 +92,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                     setOnMouseClicked { clickedButtonUpdateAccountingEntries(it) }
 
                     hboxConstraints {
-                        marginLeft = 6.0
+                        marginLeft = 12.0
                         marginRight = 4.0
                     }
                 }
