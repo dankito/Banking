@@ -21,6 +21,8 @@ import net.dankito.banking.model.AccountingEntry
 import net.dankito.banking.util.ExceptionHelper
 import tornadofx.*
 import java.text.DateFormat
+import java.util.*
+import kotlin.concurrent.schedule
 
 
 class AccountingEntriesView(private val controller: MainWindowController) : View() {
@@ -48,6 +50,15 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
     private val exceptionHelper = ExceptionHelper()
 
+
+    init {
+        Timer().schedule(6 * 24 * 60 * 60 * 1000) { // check every 6 hours
+            // TODO: check all accounts not only currently displayed one periodically
+            currentSelectedAccount?.let {
+                retrieveAndShowEntriesForAccount(it)
+            }
+        }
+    }
 
 
     override val root = vbox {
