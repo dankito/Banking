@@ -28,6 +28,8 @@ import kotlin.concurrent.schedule
 class AccountingEntriesView(private val controller: MainWindowController) : View() {
 
     companion object {
+        private const val CheckAccountsInterval = 6 * 24 * 60 * 60 * 1000L // check every 6 hours
+
         private val BookingDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
     }
 
@@ -52,7 +54,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
 
     init {
-        Timer().schedule(6 * 24 * 60 * 60 * 1000) { // check every 6 hours
+        Timer().schedule(CheckAccountsInterval, CheckAccountsInterval) {
             // TODO: check all accounts not only currently displayed one periodically
             currentSelectedAccount?.let {
                 retrieveAndShowEntriesForAccount(it)
