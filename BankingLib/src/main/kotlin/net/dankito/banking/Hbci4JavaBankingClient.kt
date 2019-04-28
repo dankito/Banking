@@ -402,6 +402,8 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
             // Wir nehmen hier der Einfachheit halber direkt die PIN. In der Praxis
             // sollte hier aber ein staerkeres Passwort genutzt werden.
             // Die Ergebnis-Daten muessen in dem StringBuffer "retData" platziert werden.
+                // if you like or need to change your pin, return your old one for NEED_PASSPHRASE_LOAD and your new
+                // one for NEED_PASSPHRASE_SAVE
                 HBCICallback.NEED_PASSPHRASE_LOAD, HBCICallback.NEED_PASSPHRASE_SAVE -> retData.replace(0, retData.length, credentials.pin)
 
             // PIN wird benoetigt
