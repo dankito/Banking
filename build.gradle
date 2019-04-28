@@ -4,7 +4,7 @@ ext {
     appVersionName = '1.0 Beta'
 
     kotlinVersion = '1.2.0'
-    hbci4jVersion = '3.0.11'
+    hbci4jVersion = '3.0.22'
     slf4jVersion = '1.7.25'
     jacksonVersion = '2.9.2'
     commonsCsvVersion = '1.5'
