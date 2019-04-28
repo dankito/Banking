@@ -27,7 +27,9 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         private val DateStartString = "DATUM "
         private val DateEndString = " UHR"
 
-        private val DateFormat = SimpleDateFormat("dd.MM.yyyy,HH.mm")
+        private val DateTimeFormat = SimpleDateFormat("dd.MM.yyyy,HH.mm")
+
+        private val DateFormat = SimpleDateFormat("dd.MM.yyyy,")
 
         private val log = LoggerFactory.getLogger(Hbci4JavaBankingClient::class.java)
     }
@@ -372,9 +374,13 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         }
 
         try {
-            entry.bookingDate = DateFormat.parse(subString)
+            entry.bookingDate = DateTimeFormat.parse(subString)
         } catch (e: Exception) {
-            log.debug("Could not parse $subString from $line to a Date", e)
+            try {
+                entry.bookingDate = DateFormat.parse(subString)
+            } catch (secondException: Exception) {
+                log.debug("Could not parse $subString from $line to a Date", e)
+            }
         }
     }
 
