@@ -113,7 +113,7 @@ class CAMTCsvFileImporterExporter : IImporter, IExporter {
         // i don't know why it's that complicated but i didn't get any other BigDecimal parsing to work
         val entry = AccountingEntry(Value(BigDecimal.valueOf(NumberFormat.parse(record["Betrag"]).toDouble()), record["Waehrung"]),
                 DateFormat.parse(record["Buchungstag"]), DateFormat.parse(record["Valutadatum"]),
-                record["Buchungstext"], parseOtherKonto(record), usage)
+                record["Buchungstext"], parseOtherKonto(record), Value(), usage) // TODO: may parse Saldo
 
         entry.sepaVerwendungszweck = usage
         entry.creditorIdentifier = record["Glaeubiger ID"]

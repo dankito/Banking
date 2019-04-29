@@ -5,7 +5,7 @@ import org.kapott.hbci.structures.Value
 import java.util.*
 
 
-class AccountingEntry(val value: Value, var bookingDate: Date, val valutaDate: Date, val type: String, val other: Konto, val usage: String) {
+class AccountingEntry(val value: Value, var bookingDate: Date, val valutaDate: Date, val type: String, val other: Konto, val saldo: Value, val usage: String) {
 
     var endToEndReference: String? = null
 
@@ -32,7 +32,7 @@ class AccountingEntry(val value: Value, var bookingDate: Date, val valutaDate: D
     val parsedUsages = ArrayList<String>()
 
 
-    internal constructor() : this(Value(), Date(0), Date(0), "", Konto(), "")
+    internal constructor() : this(Value(), Date(0), Date(0), "", Konto(), Value(), "")
 
 
     fun showOtherName(): Boolean {

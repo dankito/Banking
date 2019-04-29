@@ -243,7 +243,8 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
     }
 
     private fun mapAccountingEntry(buchung: GVRKUms.UmsLine): AccountingEntry {
-        val entry = AccountingEntry(buchung.value, buchung.bdate, buchung.valuta, buchung.text, buchung.other, buchung.usage.joinToString(""))
+        val entry = AccountingEntry(buchung.value, buchung.bdate, buchung.valuta, buchung.text, buchung.other,
+                buchung.saldo.value, buchung.usage.joinToString(""))
 
         mapUsage(buchung, entry)
 
@@ -379,7 +380,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
             try {
                 entry.bookingDate = DateFormat.parse(subString)
             } catch (secondException: Exception) {
-                log.debug("Could not parse $subString from $line to a Date", e)
+                log.debug("Could not parse '$subString' from '$line' to a Date", e)
             }
         }
     }
