@@ -5,8 +5,7 @@ ext {
 
     kotlinVersion = '1.2.0'
     hbci4jVersion = '3.0.22'
-    slf4jVersion = '1.7.25'
-    jacksonVersion = '2.9.2'
+    javaUtilsVersion = '1.0.6-SNAPSHOT'
     commonsCsvVersion = '1.5'
 
     tornadoFXVersion = '1.7.12'
@@ -34,6 +33,7 @@ buildscript {
 subprojects {
 
     repositories {
+        mavenLocal()
         mavenCentral()
         google()
         jcenter()

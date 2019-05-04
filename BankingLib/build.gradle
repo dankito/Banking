@@ -19,11 +19,9 @@ dependencies {
 
     compile "com.github.hbci4j:hbci4j-core:$hbci4jVersion"
 
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    compile "net.dankito.utils:java-utils:$javaUtilsVersion"
 
     compile "org.apache.commons:commons-csv:$commonsCsvVersion"
-
-    compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 
     testCompile "junit:junit:$junitVersion"
