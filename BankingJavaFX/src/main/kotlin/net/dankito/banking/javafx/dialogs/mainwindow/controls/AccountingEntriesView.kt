@@ -18,7 +18,7 @@ import net.dankito.banking.javafx.util.JavaFXDialogService
 import net.dankito.banking.model.Account
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
-import net.dankito.banking.util.ExceptionHelper
+import net.dankito.utils.exception.ExceptionHelper
 import tornadofx.*
 import java.text.DateFormat
 import java.util.*

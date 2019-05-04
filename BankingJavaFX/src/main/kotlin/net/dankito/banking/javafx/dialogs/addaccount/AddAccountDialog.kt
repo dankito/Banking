@@ -12,7 +12,7 @@ import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
 import net.dankito.banking.javafx.util.JavaFXDialogService
 import net.dankito.banking.model.AccountCredentials
 import net.dankito.banking.model.GetAccountsResult
-import net.dankito.banking.util.ExceptionHelper
+import net.dankito.utils.exception.ExceptionHelper
 import tornadofx.*
 
 
