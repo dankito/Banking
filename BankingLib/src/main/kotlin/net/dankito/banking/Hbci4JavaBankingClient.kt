@@ -27,6 +27,9 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         private val DateStartString = "DATUM "
         private val DateEndString = " UHR"
 
+        // the date format is hard coded in HBCIUtils.string2DateISO()
+        private val HbciLibDateFormat = SimpleDateFormat("yyyy-MM-dd")
+
         private val DateTimeFormat = SimpleDateFormat("dd.MM.yyyy,HH.mm")
 
         private val DateFormat = SimpleDateFormat("dd.MM.yyyy,")
@@ -154,18 +157,18 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
     }
 
 
-    override fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
+    override fun getAccountingEntriesAsync(account: Account, startDate: Date?, callback: (AccountingEntries) -> Unit) {
         thread {
-            callback(getAccountingEntries(account))
+            callback(getAccountingEntries(account, startDate))
         }
     }
 
-    protected open fun getAccountingEntries(account: Account): AccountingEntries {
+    protected open fun getAccountingEntries(account: Account, startDate: Date?): AccountingEntries {
         val connection = connect()
 
         connection.handle?.let { handle ->
             try {
-                val (saldoJob, umsatzJob, status) = executeJobsForGetAccountingEntries(handle, account)
+                val (saldoJob, umsatzJob, status) = executeJobsForGetAccountingEntries(handle, account, startDate)
 
                 // Pruefen, ob die Kommunikation mit der Bank grundsaetzlich geklappt hat
                 if(!status.isOK) {
@@ -210,7 +213,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         return AccountingEntries(false, error = connection.error)
     }
 
-    protected open fun executeJobsForGetAccountingEntries(handle: HBCIHandler, account: Account): Triple<HBCIJob, HBCIJob, HBCIExecStatus> {
+    protected open fun executeJobsForGetAccountingEntries(handle: HBCIHandler, account: Account, startDate: Date?): Triple<HBCIJob, HBCIJob, HBCIExecStatus> {
         // 1. Auftrag fuer das Abrufen des Saldos erzeugen
         val saldoJob = handle.newJob("SaldoReq")
         saldoJob.setParam("my", account.info) // festlegen, welches Konto abgefragt werden soll.
@@ -219,6 +222,10 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         // 2. Auftrag fuer das Abrufen der Umsaetze erzeugen
         val umsatzJob = handle.newJob("KUmsAll")
         umsatzJob.setParam("my", account.info) // festlegen, welches Konto abgefragt werden soll.
+        // evtl. Datum setzen, ab welchem die Auszüge geholt werden sollen
+        startDate?.let {
+            umsatzJob.setParam("startdate", HbciLibDateFormat.format(it))
+        }
         umsatzJob.addToQueue() // Zur Liste der auszufuehrenden Auftraege hinzufuegen
 
         // Hier koennen jetzt noch weitere Auftraege fuer diesen Bankzugang hinzugefuegt
