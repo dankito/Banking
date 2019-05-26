@@ -18,11 +18,7 @@ dependencies {
 
     compile project(':BankingLib')
 
-    compile("no.tornado:tornadofx:$tornadoFXVersion", {
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    })
-
-    compile "no.tornado:tornadofx-controls:$tornadoFXControlsVersion"
+    compile "net.dankito.utils:java-fx-utils:$javaFxUtilsVersion"
 
     compile "ch.qos.logback:logback-core:$logbackVersion"
     compile "ch.qos.logback:logback-classic:$logbackVersion"

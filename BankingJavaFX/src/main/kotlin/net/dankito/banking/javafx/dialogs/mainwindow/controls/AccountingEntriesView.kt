@@ -128,7 +128,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                 }
 
             } }
-            usageColumn.weigthedWidth(4.0)
+            usageColumn.weightedWidth(4.0)
             columns.add(usageColumn)
 
             column(messages["accounting.entry.column.header.balance"], AccountingEntry::value).prefWidth(100.0).cellFormat {
