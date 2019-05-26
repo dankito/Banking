@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 ext {
-    appVersionName = '1.0.0'
+    appVersionName = '1.0.1-SNAPSHOT'
 
     kotlinVersion = '1.3.31'
     hbci4jVersion = '3.0.22'
