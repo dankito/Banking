@@ -30,3 +30,7 @@ dependencies {
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
 }
 
+
+
+apply from: 'mavenUpload.gradle'
+

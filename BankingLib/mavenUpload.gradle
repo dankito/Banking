@@ -1,0 +1,94 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+// So after executing uploadArchives staged repository can be closed and released by executing closeAndReleaseRepository
+apply plugin: 'io.codearte.nexus-staging'
+
+
+def mavenArtifactId = "hbci"
+
+
+/*          publish to maven central            */
+
+def isReleaseVersion = !version.endsWith("SNAPSHOT")
+def areSigningPropertiesSet = isPropertySet('signing.secretKeyRingFile') && isPropertySet('signing.keyId') && isPropertySet('signing.password')
+def areOssrhPropertiesSet = isPropertySet('ossrhUsername') && isPropertySet('ossrhPassword')
+
+def isPropertySet(propertyName) {
+    return properties[propertyName] != null &&  ! (properties[propertyName] as String).isEmpty()
+}
+
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    required { isReleaseVersion && areSigningPropertiesSet && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository url: repositories.mavenLocal().url
+
+            // set ossrhUsername and ossrhPassword in your gradle.properties (in ~/.gradle/gradle.properties or project's gradle.properties)
+            if (areOssrhPropertiesSet) {
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+            }
+
+            pom.project {
+                name mavenArtifactId
+                artifactId = mavenArtifactId
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description "A wrapper around https://github.com/hbci4j/hbci4java to faciliate its usage."
+                url 'https://github.com/dankito/Banking'
+
+                scm {
+                    connection 'scm:git:git://github.com/dankito/Banking.git'
+                    developerConnection 'scm:git:git@github.com/dankito/Banking.git'
+                    url 'https://github.com/dankito/Banking'
+                }
+
+                licenses {
+                    license {
+                        name 'LGPL-2.1'
+                        url 'https://opensource.org/licenses/LGPL-2.1'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'dankito'
+                        name 'Christian Dankl'
+                        email 'maven@dankito.net'
+                    }
+                }
+            }
+        }
+    }
+}
+
+nexusStaging {
+    packageGroup = "net.dankito"
+}
