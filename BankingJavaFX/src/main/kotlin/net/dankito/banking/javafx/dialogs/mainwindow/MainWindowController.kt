@@ -150,9 +150,6 @@ class MainWindowController : Controller() {
             if(containsEntry(newEntriesOldestFirst, previousEntry) == false) {
                 mutableNewEntries.add(previousEntry)
             }
-            else {
-                break
-            }
         }
 
         newEntries.entries = mutableNewEntries.sortedByDescending { it.bookingDate }
