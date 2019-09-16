@@ -26,7 +26,9 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
 
     companion object {
         // the date format is hard coded in HBCIUtils.string2DateISO()
-        private val HbciLibDateFormat = SimpleDateFormat("yyyy-MM-dd")
+        val HbciLibDateFormat = SimpleDateFormat("yyyy-MM-dd")
+
+        val NintyDaysInMilliseconds = 90 * 24 * 60 * 60 * 1000L
 
         private val log = LoggerFactory.getLogger(Hbci4JavaBankingClient::class.java)
     }
@@ -156,6 +158,20 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
     override fun getAccountingEntriesAsync(account: Account, startDate: Date?, callback: (AccountingEntries) -> Unit) {
         thread {
             callback(getAccountingEntries(account, startDate))
+        }
+    }
+
+    /**
+     * According to PSD2 for the accounting entries of the last 90 days the two-factor authorization does not have to
+     * be applied. It depends on the bank if they request a second factor or not.
+     *
+     * So we simply try to retrieve at accounting entries of the last 90 days and see if a second factor is required
+     * or not.
+     */
+    override fun getAccountingEntriesOfLast90DaysAsync(account: Account, callback: (AccountingEntries) -> Unit) {
+        thread {
+            val nintyDaysAgo = Date(Date().time - NintyDaysInMilliseconds)
+            callback(getAccountingEntries(account, nintyDaysAgo))
         }
     }
 

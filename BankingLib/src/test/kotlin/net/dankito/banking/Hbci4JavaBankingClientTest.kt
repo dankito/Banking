@@ -53,7 +53,7 @@ class Hbci4JavaBankingClientTest {
                 countDownLatch.countDown()
             }
             else {
-                underTest.getAccountingEntriesAsync(bankInfo.accounts[0], null) {
+                underTest.getAccountingEntriesOfLast90DaysAsync(bankInfo.accounts[0]) {
                     result.set(it)
                     countDownLatch.countDown()
                 }
