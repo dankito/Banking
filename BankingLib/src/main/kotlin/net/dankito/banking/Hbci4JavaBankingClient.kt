@@ -1,6 +1,7 @@
 package net.dankito.banking
 
 import net.dankito.banking.model.*
+import net.dankito.banking.util.AccountingEntryMapper
 import org.kapott.hbci.GV.HBCIJob
 import org.kapott.hbci.GV_Result.GVRKUms
 import org.kapott.hbci.GV_Result.GVRSaldoReq
@@ -24,19 +25,14 @@ import kotlin.concurrent.thread
 open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataDirectory: File) : IBankingClient {
 
     companion object {
-        private val DateStartString = "DATUM "
-        private val DateEndString = " UHR"
-
         // the date format is hard coded in HBCIUtils.string2DateISO()
         private val HbciLibDateFormat = SimpleDateFormat("yyyy-MM-dd")
-
-        private val DateTimeFormat = SimpleDateFormat("dd.MM.yyyy,HH.mm")
-
-        private val DateFormat = SimpleDateFormat("dd.MM.yyyy,")
 
         private val log = LoggerFactory.getLogger(Hbci4JavaBankingClient::class.java)
     }
 
+
+    protected val accountingEntryMapper = AccountingEntryMapper()
 
 
     protected open fun connect(): ConnectionValues {
@@ -198,7 +194,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
                 }
 
 
-                return AccountingEntries(true, saldo, mapAccountingEntries(result))
+                return AccountingEntries(true, saldo, accountingEntryMapper.mapAccountingEntries(result))
             }
             catch(e: Exception) {
                 log.error("Could not get accounting details for bank ${credentials.bankleitzahl}", e)
@@ -235,161 +231,6 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         val status = handle.execute()
 
         return Triple(saldoJob, umsatzJob, status)
-    }
-
-    private fun mapAccountingEntries(result: GVRKUms): List<AccountingEntry> {
-        val entries = ArrayList<AccountingEntry>()
-
-        result.flatData.forEach { buchung ->
-            entries.add(mapAccountingEntry(buchung))
-        }
-
-        log.debug("Retrieved ${result.flatData.size} accounting entries")
-
-        return entries.sortedByDescending { it.bookingDate }
-    }
-
-    private fun mapAccountingEntry(buchung: GVRKUms.UmsLine): AccountingEntry {
-        val entry = AccountingEntry(buchung.value, buchung.bdate, buchung.valuta, buchung.text, buchung.other,
-                buchung.saldo.value, buchung.usage.joinToString(""))
-
-        mapUsage(buchung, entry)
-
-        return entry
-    }
-
-    /**
-     * From https://sites.google.com/a/crem-solutions.de/doku/version-2012-neu/buchhaltung/03-zahlungsverkehr/05-e-banking/technische-beschreibung-der-mt940-sta-datei:
-     *
-     * Weitere 4 Verwendungszwecke können zu den Feldschlüsseln 60 bis 63 eingestellt werden.
-     * Jeder Bezeichner [z.B. EREF+] muss am Anfang eines Subfeldes [z. B. ?21] stehen.
-     * Bei Längenüberschreitung wird im nachfolgenden Subfeld ohne Wiederholung des Bezeichners fortgesetzt. Bei Wechsel des Bezeichners ist ein neues Subfeld zu beginnen.
-     * Belegung in der nachfolgenden Reihenfolge, wenn vorhanden:
-     * EREF+[ Ende-zu-Ende Referenz ] (DD-AT10; CT-AT41 - Angabe verpflichtend; NOTPROVIDED wird nicht eingestellt.)
-     * KREF+[Kundenreferenz]
-     * MREF+[Mandatsreferenz] (DD-AT01 - Angabe verpflichtend)
-     * CRED+[Creditor Identifier] (DD-AT02 - Angabe verpflichtend bei SEPA-Lastschriften, nicht jedoch bei SEPA-Rücklastschriften)
-     * DEBT+[Originators Identification Code](CT-AT10- Angabe verpflichtend,)
-     * Entweder CRED oder DEBT
-     *
-     * optional zusätzlich zur Einstellung in Feld 61, Subfeld 9:
-     *
-     * COAM+ [Compensation Amount / Summe aus Auslagenersatz und Bearbeitungsprovision bei einer nationalen Rücklastschrift sowie optionalem Zinsausgleich.]
-     * OAMT+[Original Amount] Betrag der ursprünglichen Lastschrift
-     *
-     * SVWZ+[SEPA-Verwendungszweck] (DD-AT22; CT-AT05 -Angabe verpflichtend, nicht jedoch bei R-Transaktionen)
-     * ABWA+[Abweichender Überweisender] (CT-AT08) / Abweichender Zahlungsempfänger (DD-AT38) ] (optional)
-     * ABWE+[Abweichender Zahlungsemp-fänger (CT-AT28) / Abweichender Zahlungspflichtiger ((DD-AT15)] (optional)
-     */
-    private fun mapUsage(buchung: GVRKUms.UmsLine, entry: AccountingEntry) {
-        var lastUsageLineType = UsageLineType.ContinuationFromLastLine
-        var typeValue = ""
-
-        buchung.usage.forEach { line ->
-            val (type, adjustedString) = getUsageLineType(line, entry)
-
-            if(type == UsageLineType.ContinuationFromLastLine) {
-                typeValue += (if(adjustedString[0].isUpperCase()) " " else "") + adjustedString
-            }
-            else if(lastUsageLineType != type) {
-                if(lastUsageLineType != UsageLineType.ContinuationFromLastLine) {
-                    setUsageLineValue(entry, lastUsageLineType, typeValue)
-                }
-
-                typeValue = adjustedString
-                lastUsageLineType = type
-            }
-
-            tryToParseBookingDateFromUsageLine(entry, adjustedString, typeValue)
-        }
-
-        if(lastUsageLineType != UsageLineType.ContinuationFromLastLine) {
-            setUsageLineValue(entry, lastUsageLineType, typeValue)
-        }
-    }
-
-    private fun setUsageLineValue(entry: AccountingEntry, lastUsageLineType: UsageLineType, typeValue: String) {
-        entry.parsedUsages.add(typeValue)
-
-        when(lastUsageLineType) {
-            UsageLineType.EREF -> entry.endToEndReference = typeValue
-            UsageLineType.KREF -> entry.kundenreferenz = typeValue
-            UsageLineType.MREF -> entry.mandatsreferenz = typeValue
-            UsageLineType.CRED -> entry.creditorIdentifier = typeValue
-            UsageLineType.DEBT -> entry.originatorsIdentificationCode = typeValue
-            UsageLineType.COAM -> entry.compensationAmount = typeValue
-            UsageLineType.OAMT -> entry.originalAmount = typeValue
-            UsageLineType.SVWZ -> entry.sepaVerwendungszweck = typeValue
-            UsageLineType.ABWA -> entry.abweichenderAuftraggeber = typeValue
-            UsageLineType.ABWE -> entry.abweichenderZahlungsempfaenger = typeValue
-            UsageLineType.NoSpecialType -> entry.usageWithNoSpecialType = typeValue
-        }
-    }
-
-    private fun getUsageLineType(line: String, entry: AccountingEntry): Pair<UsageLineType, String> {
-        if(line.startsWith("EREF+")) {
-            return Pair(UsageLineType.EREF, line.substring(5))
-        }
-        else if(line.startsWith("KREF+")) {
-            return Pair(UsageLineType.KREF, line.substring(5))
-        }
-        else if(line.startsWith("MREF+")) {
-            return Pair(UsageLineType.MREF, line.substring(5))
-        }
-        else if(line.startsWith("CRED+")) {
-            return Pair(UsageLineType.CRED, line.substring(5))
-        }
-        else if(line.startsWith("DEBT+")) {
-            return Pair(UsageLineType.DEBT, line.substring(5))
-        }
-        else if(line.startsWith("COAM+")) {
-            return Pair(UsageLineType.COAM, line.substring(5))
-        }
-        else if(line.startsWith("OAMT+")) {
-            return Pair(UsageLineType.OAMT, line.substring(5))
-        }
-        else if(line.startsWith("SVWZ+")) {
-            return Pair(UsageLineType.SVWZ, line.substring(5))
-        }
-        else if(line.startsWith("ABWA+")) {
-            return Pair(UsageLineType.ABWA, line.substring(5))
-        }
-        else if(line.startsWith("ABWE+")) {
-            return Pair(UsageLineType.ABWE, line.substring(5))
-        }
-        else if(entry.usage.startsWith(line)) {
-            return Pair(UsageLineType.NoSpecialType, line)
-        }
-        else {
-            return Pair(UsageLineType.ContinuationFromLastLine, line)
-        }
-    }
-
-    private fun tryToParseBookingDateFromUsageLine(entry: AccountingEntry, currentLine: String, typeLine: String) {
-        if(currentLine.startsWith(DateStartString)) {
-            tryToParseBookingDateFromUsageLine(entry, currentLine)
-        }
-        else if(typeLine.startsWith(DateStartString)) {
-            tryToParseBookingDateFromUsageLine(entry, typeLine)
-        }
-    }
-
-    private fun tryToParseBookingDateFromUsageLine(entry: AccountingEntry, line: String) {
-        var subString = line.replace(DateStartString, "")
-        val index = subString.indexOf(DateEndString)
-        if(index > 0) {
-            subString = subString.substring(0, index)
-        }
-
-        try {
-            entry.bookingDate = DateTimeFormat.parse(subString)
-        } catch (e: Exception) {
-            try {
-                entry.bookingDate = DateFormat.parse(subString)
-            } catch (secondException: Exception) {
-                log.debug("Could not parse '$subString' from '$line' to a Date", e)
-            }
-        }
     }
 
 
