@@ -4,7 +4,6 @@ import javafx.beans.binding.ObjectBinding
 import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.geometry.Pos
-import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TextField
@@ -19,6 +18,7 @@ import net.dankito.banking.model.Account
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
 import net.dankito.utils.exception.ExceptionHelper
+import net.dankito.utils.javafx.ui.controls.UpdateButton
 import tornadofx.*
 import java.text.DateFormat
 import java.util.*
@@ -38,7 +38,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
     private var balanceLabel: Label by singleAssign()
 
-    private var updateAccountingEntriesButton: Button by singleAssign()
+    private var updateAccountingEntriesButton: UpdateButton by singleAssign()
 
 
     private var currentSelectedAccount: Account? = null
@@ -99,10 +99,8 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                 }
                 add(balanceLabel)
 
-                updateAccountingEntriesButton = button("Update") { // TODO: set icon
+                updateAccountingEntriesButton = UpdateButton("Update", { updateAccountingEntries() }).apply {
                     isDisable = true
-
-                    setOnMouseClicked { clickedButtonUpdateAccountingEntries(it) }
 
                     hboxConstraints {
                         marginLeft = 12.0
@@ -155,11 +153,9 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         }
     }
 
-    private fun clickedButtonUpdateAccountingEntries(event: MouseEvent) {
-        if(event.button == MouseButton.PRIMARY && event.clickCount == 1) {
-            currentSelectedAccount?.let { account ->
-                retrieveAndShowEntriesForAccount(account)
-            }
+    private fun updateAccountingEntries() {
+        currentSelectedAccount?.let { account ->
+            retrieveAndShowEntriesForAccount(account)
         }
     }
 
@@ -211,11 +207,14 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
         runLater {
             searchTextField.isDisable = false
-            updateAccountingEntriesButton.isDisable = false
+            updateAccountingEntriesButton.setIsUpdating()
         }
     }
 
     private fun retrievedAccountingEntriesResult(account: Account, result: AccountingEntries) {
+        updateAccountingEntriesButton.isDisable = false
+        updateAccountingEntriesButton.resetIsUpdating()
+
         if(result.successful) {
             setEntriesOfCurrentAccount(result)
         }
