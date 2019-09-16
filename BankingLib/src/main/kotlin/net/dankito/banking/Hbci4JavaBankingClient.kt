@@ -281,7 +281,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
                 HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, credentials.pin)
 
             // ADDED: Auswaehlen welches PinTan Verfahren verwendet werden soll
-                HBCICallback.NEED_PT_SECMECH -> retData.replace(0, retData.length, "912") // TODO: i set it to a fixed value here, ask user
+                HBCICallback.NEED_PT_SECMECH -> retData.replace(0, retData.length, "911") // TODO: i set it to a fixed value here, ask user
 
             // BLZ wird benoetigt
                 HBCICallback.NEED_BLZ -> retData.replace(0, retData.length, credentials.bankleitzahl)
