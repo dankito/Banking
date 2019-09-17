@@ -2,6 +2,7 @@ package net.dankito.banking.javafx.dialogs.addaccount
 
 import javafx.geometry.Insets
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -34,6 +35,8 @@ class AddAccountDialog : DialogFragment() {
     private var txtfldCustomerId: TextField by singleAssign()
 
     private var txtfldPassword: TextField by singleAssign()
+
+    private var btnOk: Button by singleAssign()
 
 
     val controller: MainWindowController by param()
@@ -111,7 +114,7 @@ class AddAccountDialog : DialogFragment() {
                 }
             }
 
-            button(messages["dialog.button.ok"]) {
+            btnOk = button(messages["dialog.button.ok"]) {
                 prefHeight = ButtonHeight
                 prefWidth = ButtonWidth
 
@@ -144,6 +147,8 @@ class AddAccountDialog : DialogFragment() {
     }
 
     private fun checkEnteredCredentials() {
+        btnOk.isDisable = true
+
         val credentials = AccountCredentials(txtfldBankCode.text, txtfldCustomerId.text, txtfldPassword.text)
 
         controller.addAccountAsync(credentials) { result ->
@@ -152,6 +157,8 @@ class AddAccountDialog : DialogFragment() {
     }
 
     private fun retrievedGetAccountsResult(credentials: AccountCredentials, result: GetAccountsResult) {
+        btnOk.isDisable = false
+
         result.error?.let { showError(credentials, it) }
 
         result.bankInfo?.let {
