@@ -199,8 +199,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         searchTextField.isDisable = false
         updateAccountingEntriesButton.isDisable = false
 
-        val storedEntries = controller.getStoredAccountingEntries(account) ?: AccountingEntries(false)
-        setEntriesOfCurrentAccount(storedEntries)
+        setEntriesOfCurrentAccount(account, AccountingEntries(false))
 
         updateAccountingEntries(account)
     }
@@ -225,11 +224,17 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         updateAccountingEntriesButton.resetIsUpdating()
 
         if(result.successful) {
-            setEntriesOfCurrentAccount(result)
+            setEntriesOfCurrentAccount(account, result)
         }
         else {
             result.error?.let { showCouldNotRetrieveAccountingEntriesError(account, it) }
         }
+    }
+
+    private fun setEntriesOfCurrentAccount(account: Account, accountingEntries: AccountingEntries) {
+        val entries = controller.getStoredAccountingEntries(account) ?: accountingEntries
+
+        setEntriesOfCurrentAccount(entries)
     }
 
     private fun setEntriesOfCurrentAccount(accountingEntries: AccountingEntries) {

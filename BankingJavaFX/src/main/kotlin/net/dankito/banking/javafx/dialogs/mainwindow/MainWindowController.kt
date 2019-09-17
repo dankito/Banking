@@ -115,7 +115,21 @@ class MainWindowController : Controller() {
     }
 
     fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
+        val lastRetrievedEntryDate = getDateOfLastRetrievedAccountingEntry(account)
+
+        // never retrieved or didn't retrieve in last 90 days accounting entries for this account -> get all
+        if (lastRetrievedEntryDate == null || isOlderThan90Days(lastRetrievedEntryDate)) {
+            getAllAccountingEntriesAsync(account, callback)
+        }
+        else {
+            // according to PSD2 entries of last 90 days may be retrieved without second factor -> check if bank supports this
+            getAccountingEntriesOfLast90DaysAsync(account, callback)
+        }
+    }
+
+    fun getAllAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         val client = getClientForAccount(account)
+
         client.getAccountingEntriesAsync(account, null) { result ->
             handleRetrievedAccountingEntries(client, account, result, callback)
         }
@@ -123,6 +137,7 @@ class MainWindowController : Controller() {
 
     fun getAccountingEntriesOfLast90DaysAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         val client = getClientForAccount(account)
+
         client.getAccountingEntriesOfLast90DaysAsync(account) { result ->
             handleRetrievedAccountingEntries(client, account, result, callback)
         }
@@ -155,7 +170,7 @@ class MainWindowController : Controller() {
     }
 
     private fun mergeEntries(previousEntries: AccountingEntries, newEntries: AccountingEntries): AccountingEntries {
-        val newEntriesOldestFirst = newEntries.entries.sortedBy { it.bookingDate }
+        val newEntriesOldestFirst = sortByDate(newEntries.entries)
         val mutableNewEntries = newEntries.entries.toMutableList()
 
         for(i in previousEntries.entries.size - 1 downTo 0) { // only check older ones up to the time the first match is found
@@ -165,7 +180,7 @@ class MainWindowController : Controller() {
             }
         }
 
-        newEntries.entries = mutableNewEntries.sortedByDescending { it.bookingDate }
+        newEntries.entries = sortByDateDescending(mutableNewEntries)
         return newEntries
     }
 
@@ -210,6 +225,31 @@ class MainWindowController : Controller() {
         if(result.successful) {
             clientsForAccounts.put(credentials, client)
         }
+    }
+
+
+    private fun getDateOfLastRetrievedAccountingEntry(account: Account): Date? {
+        getStoredAccountingEntries(account)?.let { storedEntries ->
+            return getLastAccountingEntryDate(storedEntries.entries)
+        }
+
+        return null
+    }
+
+    private fun getLastAccountingEntryDate(entries: List<AccountingEntry>): Date? {
+        return sortByDateDescending(entries).firstOrNull()?.bookingDate
+    }
+
+    private fun isOlderThan90Days(date: Date): Boolean {
+        return date.time < (Date().time - Hbci4JavaBankingClient.NinetyDaysInMilliseconds)
+    }
+
+    private fun sortByDate(entries: List<AccountingEntry>): List<AccountingEntry> {
+        return entries.sortedBy { it.bookingDate }
+    }
+
+    private fun sortByDateDescending(entries: List<AccountingEntry>): List<AccountingEntry> {
+        return entries.sortedByDescending { it.bookingDate }
     }
 
 
