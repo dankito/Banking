@@ -19,6 +19,7 @@ import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
 import net.dankito.utils.exception.ExceptionHelper
 import net.dankito.utils.javafx.ui.controls.UpdateButton
+import org.slf4j.LoggerFactory
 import tornadofx.*
 import java.text.DateFormat
 import java.util.*
@@ -31,6 +32,8 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         private const val CheckAccountsInterval = 6 * 24 * 60 * 60 * 1000L // check every 6 hours
 
         private val BookingDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+
+        private val logger = LoggerFactory.getLogger(AccountingEntriesView::class.java)
     }
 
 
@@ -56,6 +59,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
     init {
         Timer().schedule(CheckAccountsInterval, CheckAccountsInterval) {
             // TODO: check all accounts not only currently displayed one periodically
+            logger.info("Updating accounting data for $currentSelectedAccount")
             currentSelectedAccount?.let {
                 retrieveAndShowEntriesForAccount(it)
             }
