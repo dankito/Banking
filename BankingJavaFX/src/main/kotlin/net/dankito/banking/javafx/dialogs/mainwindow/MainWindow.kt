@@ -49,7 +49,7 @@ class MainWindow : View(messages["main.window.title"]), IMainView {
 
 
     private fun selectedAccountChanged(account: Account) {
-        accountingEntriesView.retrieveAndShowEntriesForAccount(account)
+        accountingEntriesView.setCurrentAccountAndUpdateAccountingEntries(account)
     }
 
     override fun showAccounts(bankInfos: List<BankInfo>) {

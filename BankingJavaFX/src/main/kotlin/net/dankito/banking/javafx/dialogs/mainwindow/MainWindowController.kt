@@ -110,9 +110,11 @@ class MainWindowController : Controller() {
     }
 
 
-    fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
-        accountEntries[account]?.let { callback(it) }
+    fun getStoredAccountingEntries(account: Account): AccountingEntries? {
+        return accountEntries[account]
+    }
 
+    fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         val client = getClientForAccount(account)
         client.getAccountingEntriesAsync(account, null) { result ->
             storeClientIfSuccessful(client, account.credentials, result)

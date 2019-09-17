@@ -60,9 +60,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         Timer().schedule(CheckAccountsInterval, CheckAccountsInterval) {
             // TODO: check all accounts not only currently displayed one periodically
             logger.info("Updating accounting data for $currentSelectedAccount")
-            currentSelectedAccount?.let {
-                retrieveAndShowEntriesForAccount(it)
-            }
+            updateAccountingEntries()
         }
     }
 
@@ -157,12 +155,6 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         }
     }
 
-    private fun updateAccountingEntries() {
-        currentSelectedAccount?.let { account ->
-            retrieveAndShowEntriesForAccount(account)
-        }
-    }
-
     private fun tableClicked(event: MouseEvent, selectedItem: AccountingEntry?) {
         if(event.clickCount == 2 && event.button == MouseButton.PRIMARY) {
             if(selectedItem != null) {
@@ -202,21 +194,35 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
     }
 
 
-    fun retrieveAndShowEntriesForAccount(account: Account) {
+    fun setCurrentAccountAndUpdateAccountingEntries(account: Account) {
         currentSelectedAccount = account
 
-        controller.getAccountingEntriesAsync(account) { result ->
-            runLater { retrievedAccountingEntriesResult(account, result) }
-        }
+        searchTextField.isDisable = false
+        updateAccountingEntriesButton.isDisable = false
 
-        runLater {
-            searchTextField.isDisable = false
-            updateAccountingEntriesButton.setIsUpdating()
+        val storedEntries = controller.getStoredAccountingEntries(account) ?: AccountingEntries(false)
+        setEntriesOfCurrentAccount(storedEntries)
+
+        updateAccountingEntries(account)
+    }
+
+    private fun updateAccountingEntries() {
+        currentSelectedAccount?.let { account ->
+            updateAccountingEntries(account)
         }
     }
 
-    private fun retrievedAccountingEntriesResult(account: Account, result: AccountingEntries) {
-        updateAccountingEntriesButton.isDisable = false
+    private fun updateAccountingEntries(account: Account) {
+        runLater {
+            updateAccountingEntriesButton.setIsUpdating()
+        }
+
+        controller.getAccountingEntriesAsync(account) { result ->
+            runLater { retrievedAccountingEntriesResultOnUiThread(account, result) }
+        }
+    }
+
+    private fun retrievedAccountingEntriesResultOnUiThread(account: Account, result: AccountingEntries) {
         updateAccountingEntriesButton.resetIsUpdating()
 
         if(result.successful) {
