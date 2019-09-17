@@ -106,7 +106,6 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
                     hboxConstraints {
                         marginLeft = 12.0
-                        marginRight = 4.0
                     }
                 }
                 add(updateAccountingEntriesButton)
