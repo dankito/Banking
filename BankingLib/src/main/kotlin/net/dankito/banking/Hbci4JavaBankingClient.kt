@@ -28,7 +28,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         // the date format is hard coded in HBCIUtils.string2DateISO()
         val HbciLibDateFormat = SimpleDateFormat("yyyy-MM-dd")
 
-        val NintyDaysInMilliseconds = 90 * 24 * 60 * 60 * 1000L
+        const val NinetyDaysInMilliseconds = 90 * 24 * 60 * 60 * 1000L
 
         private val log = LoggerFactory.getLogger(Hbci4JavaBankingClient::class.java)
     }
@@ -170,8 +170,8 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
      */
     override fun getAccountingEntriesOfLast90DaysAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         thread {
-            val nintyDaysAgo = Date(Date().time - NintyDaysInMilliseconds)
-            callback(getAccountingEntries(account, nintyDaysAgo))
+            val ninetyDaysAgo = Date(Date().time - NinetyDaysInMilliseconds)
+            callback(getAccountingEntries(account, ninetyDaysAgo))
         }
     }
 
