@@ -117,11 +117,22 @@ class MainWindowController : Controller() {
     fun getAccountingEntriesAsync(account: Account, callback: (AccountingEntries) -> Unit) {
         val client = getClientForAccount(account)
         client.getAccountingEntriesAsync(account, null) { result ->
-            storeClientIfSuccessful(client, account.credentials, result)
-            retrievedAccountingEntries(account, result)
-
-            callback(result)
+            handleRetrievedAccountingEntries(client, account, result, callback)
         }
+    }
+
+    fun getAccountingEntriesOfLast90DaysAsync(account: Account, callback: (AccountingEntries) -> Unit) {
+        val client = getClientForAccount(account)
+        client.getAccountingEntriesOfLast90DaysAsync(account) { result ->
+            handleRetrievedAccountingEntries(client, account, result, callback)
+        }
+    }
+
+    private fun handleRetrievedAccountingEntries(client: IBankingClient, account: Account, result: AccountingEntries, callback: (AccountingEntries) -> Unit) {
+        storeClientIfSuccessful(client, account.credentials, result)
+        retrievedAccountingEntries(account, result)
+
+        callback(result)
     }
 
     private fun retrievedAccountingEntries(account: Account, result: AccountingEntries) {
