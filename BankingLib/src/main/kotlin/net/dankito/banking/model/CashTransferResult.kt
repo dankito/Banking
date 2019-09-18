@@ -1,11 +1,10 @@
 package net.dankito.banking.model
 
-import kotlin.Exception
 
-
-class CashTransferResult(val successful: Boolean,
+class CashTransferResult(successful: Boolean,
                          val message: String,
-                         val exception: Exception? = null) {
+                         error: Exception? = null
+) : ResultBase(successful, error) {
 
     override fun toString(): String {
         return "Successful? $successful. $message"
