@@ -8,6 +8,9 @@ import java.util.*
 
 interface IBankingClient {
 
+    fun findBankByIban(iban: String): BankInfo?
+
+
     fun getAccountsAsync(callback: GetAccountsCallback) {
         getAccountsAsync {
             callback.done(it)

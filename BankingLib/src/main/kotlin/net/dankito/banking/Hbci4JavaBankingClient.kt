@@ -11,6 +11,7 @@ import org.kapott.hbci.callback.AbstractHBCICallback
 import org.kapott.hbci.callback.HBCICallback
 import org.kapott.hbci.manager.HBCIHandler
 import org.kapott.hbci.manager.HBCIUtils
+import org.kapott.hbci.manager.HBCIUtilsInternal
 import org.kapott.hbci.manager.HBCIVersion
 import org.kapott.hbci.passport.AbstractHBCIPassport
 import org.kapott.hbci.passport.HBCIPassport
@@ -43,6 +44,20 @@ open class Hbci4JavaBankingClient @JvmOverloads constructor(
 
     protected val accountingEntryMapper = AccountingEntryMapper()
 
+
+    override fun findBankByIban(iban: String): BankInfo? {
+        if (iban.length > 4) {
+            val ibanWithoutCountryAndChecksum = iban.substring(4)
+
+            HBCIUtilsInternal.banks.values.filter { bank ->
+                ibanWithoutCountryAndChecksum.startsWith(bank.blz)
+            }.firstOrNull()?.let {
+                return BankInfo(it, listOf())
+            }
+        }
+
+        return null
+    }
 
     protected open fun connect(): ConnectionValues {
         return connect(credentials, HBCIVersion.HBCI_300)

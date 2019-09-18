@@ -96,7 +96,7 @@ class Hbci4JavaBankingClientTest {
         assertThat(result).isNotNull
         assertThat(result.successful).isTrue()
         assertThat(result.message).isNotBlank()
-        assertThat(result.exception).isNull()
+        assertThat(result.error).isNull()
     }
 
 }
