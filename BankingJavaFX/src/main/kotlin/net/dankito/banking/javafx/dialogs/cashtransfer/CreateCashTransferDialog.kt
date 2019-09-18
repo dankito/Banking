@@ -54,7 +54,6 @@ class CreateCashTransferDialog : DialogFragment() {
     init {
         remitteeIban.addListener { _, _, newValue -> checkIfIsValidBank(newValue) }
         amount.addListener { _, _, _ -> checkIfRequiredInformationEntered() }
-        usage.addListener { _, _, _ -> checkIfRequiredInformationEntered() }
     }
 
 
@@ -196,7 +195,6 @@ class CreateCashTransferDialog : DialogFragment() {
                 remitteeName.value.isNotBlank()
                         && remitteeBank != null
                         && amount.value > 0
-                        && usage.value.isNullOrBlank() == false
 
         btnOk.isDisable = !!!requiredInformationEntered
     }
