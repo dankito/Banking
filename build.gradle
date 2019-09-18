@@ -8,7 +8,7 @@ ext {
     javaUtilsVersion = '1.0.8'
     commonsCsvVersion = '1.5'
 
-    javaFxUtilsVersion = '1.0.3-SNAPSHOT'
+    javaFxUtilsVersion = '1.0.3'
 
     junitVersion = '4.12'
     logbackVersion = '1.2.3'
