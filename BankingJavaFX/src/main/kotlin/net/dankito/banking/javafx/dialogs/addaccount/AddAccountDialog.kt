@@ -2,18 +2,17 @@ package net.dankito.banking.javafx.dialogs.addaccount
 
 import javafx.geometry.Insets
 import javafx.geometry.Pos
-import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import javafx.scene.input.MouseButton
-import javafx.scene.input.MouseEvent
 import net.dankito.banking.javafx.dialogs.DialogFragment
 import net.dankito.banking.javafx.dialogs.mainwindow.MainWindowController
 import net.dankito.banking.javafx.util.JavaFXDialogService
 import net.dankito.banking.model.AccountCredentials
 import net.dankito.banking.model.GetAccountsResult
 import net.dankito.utils.exception.ExceptionHelper
+import net.dankito.utils.javafx.ui.controls.UpdateButton
+import net.dankito.utils.javafx.ui.controls.updateButton
 import tornadofx.*
 
 
@@ -36,7 +35,7 @@ class AddAccountDialog : DialogFragment() {
 
     private var txtfldPassword: TextField by singleAssign()
 
-    private var btnOk: Button by singleAssign()
+    private var btnOk: UpdateButton by singleAssign()
 
 
     val controller: MainWindowController by param()
@@ -107,18 +106,16 @@ class AddAccountDialog : DialogFragment() {
                 prefHeight = ButtonHeight
                 prefWidth = ButtonWidth
 
-                setOnMouseClicked { clickedCancelButton(it) }
+                action { close() }
 
                 hboxConstraints {
                     margin = Insets(6.0, 0.0, 4.0, 0.0)
                 }
             }
 
-            btnOk = button(messages["dialog.button.ok"]) {
+            btnOk = updateButton(messages["dialog.button.ok"], { checkEnteredCredentials() }) {
                 prefHeight = ButtonHeight
                 prefWidth = ButtonWidth
-
-                setOnMouseClicked { clickedOkButton(it) }
 
                 hboxConstraints {
                     margin = Insets(6.0, 4.0, 4.0, 12.0)
@@ -128,18 +125,6 @@ class AddAccountDialog : DialogFragment() {
     }
 
 
-    private fun clickedCancelButton(event: MouseEvent) {
-        if(event.button == MouseButton.PRIMARY) {
-            close()
-        }
-    }
-
-    private fun clickedOkButton(event: MouseEvent) {
-        if(event.button == MouseButton.PRIMARY) {
-            checkEnteredCredentials()
-        }
-    }
-
     private fun keyReleased(event: KeyEvent) {
         if(event.code == KeyCode.ENTER) {
             checkEnteredCredentials()
@@ -147,6 +132,7 @@ class AddAccountDialog : DialogFragment() {
     }
 
     private fun checkEnteredCredentials() {
+        btnOk.setIsUpdating()
         btnOk.isDisable = true
 
         val credentials = AccountCredentials(txtfldBankCode.text, txtfldCustomerId.text, txtfldPassword.text)
@@ -157,6 +143,7 @@ class AddAccountDialog : DialogFragment() {
     }
 
     private fun retrievedGetAccountsResult(credentials: AccountCredentials, result: GetAccountsResult) {
+        btnOk.resetIsUpdating()
         btnOk.isDisable = false
 
         result.error?.let { showError(credentials, it) }
