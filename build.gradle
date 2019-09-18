@@ -11,6 +11,8 @@ ext {
     javaFxUtilsVersion = '1.0.3'
 
     junitVersion = '4.12'
+    assertJVersion = '3.12.2'
+
     logbackVersion = '1.2.3'
 }
 

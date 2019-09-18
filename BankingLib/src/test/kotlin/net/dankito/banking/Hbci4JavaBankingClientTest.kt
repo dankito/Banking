@@ -1,13 +1,11 @@
 package net.dankito.banking
 
-import net.dankito.banking.model.AccountCredentials
-import net.dankito.banking.model.AccountingEntries
-import net.dankito.banking.model.GetAccountsResult
-import org.hamcrest.CoreMatchers.*
-import org.junit.Assert.assertThat
+import net.dankito.banking.model.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import java.math.BigDecimal
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 
@@ -19,6 +17,10 @@ class Hbci4JavaBankingClientTest {
         private const val Bankleitzahl = ""
         private const val CustomerId = ""
         private const val Pin = ""
+
+        private const val NameForCashTransfer = ""
+        private const val IbanForCashTransfer = ""
+        private const val BicForCashTransfer = ""
     }
 
 
@@ -44,11 +46,11 @@ class Hbci4JavaBankingClientTest {
         try { countDownLatch.await() } catch(ignored: Exception) { }
 
         val getAccountsResult = result.get()
-        assertThat(getAccountsResult, notNullValue())
-        assertThat(getAccountsResult?.successful, `is`(true))
-        assertThat(getAccountsResult?.error, nullValue())
-        assertThat(getAccountsResult?.bankInfo, notNullValue())
-        assertThat(getAccountsResult?.bankInfo?.accounts?.size, `is`(not(0)))
+        assertThat(getAccountsResult).isNotNull
+        assertThat(getAccountsResult?.successful).isTrue()
+        assertThat(getAccountsResult?.error).isNull()
+        assertThat(getAccountsResult?.bankInfo).isNotNull
+        assertThat(getAccountsResult?.bankInfo?.accounts).isNotEmpty
     }
 
     @Test
@@ -62,7 +64,7 @@ class Hbci4JavaBankingClientTest {
                 countDownLatch.countDown()
             }
             else {
-                underTest.getAccountingEntriesOfLast90DaysAsync(bankInfo.accounts[0]) {
+                underTest.getAccountingEntriesAsync(bankInfo.accounts[0], null) {
                     result.set(it)
                     countDownLatch.countDown()
                 }
@@ -73,11 +75,28 @@ class Hbci4JavaBankingClientTest {
 
         val accountingEntries = result.get()
 
-        assertThat(accountingEntries, notNullValue())
-        assertThat(accountingEntries?.saldo, notNullValue())
-        assertThat(accountingEntries?.saldo?.longValue, `is`(not(0L)))
-        assertThat(accountingEntries?.entries, notNullValue())
-        assertThat(accountingEntries?.entries?.size, `is`(not(0)))
+        assertThat(accountingEntries).isNotNull
+        assertThat(accountingEntries?.saldo).isNotNull
+        assertThat(accountingEntries?.saldo?.longValue).isNotEqualTo(0L)
+        assertThat(accountingEntries?.entries).isNotNull
+        assertThat(accountingEntries?.entries).isNotEmpty
+    }
+
+    @Test
+    fun testCashTransfer() {
+        // given
+        val source = SepaParty(NameForCashTransfer, IbanForCashTransfer, BicForCashTransfer)
+        val destination = SepaParty(NameForCashTransfer, IbanForCashTransfer, BicForCashTransfer)
+
+        // when
+        // let's transfer 1 Cent to same account
+        val result = underTest.transferCash(CashTransfer(source, destination, BigDecimal("0.01"), "Test cash transfer"))
+
+        // then
+        assertThat(result).isNotNull
+        assertThat(result.successful).isTrue()
+        assertThat(result.message).isNotBlank()
+        assertThat(result.exception).isNull()
     }
 
 }

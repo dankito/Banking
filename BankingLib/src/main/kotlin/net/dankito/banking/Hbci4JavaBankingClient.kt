@@ -16,6 +16,7 @@ import org.kapott.hbci.passport.AbstractHBCIPassport
 import org.kapott.hbci.passport.HBCIPassport
 import org.kapott.hbci.status.HBCIExecStatus
 import org.kapott.hbci.structures.Konto
+import org.kapott.hbci.structures.Value
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.text.SimpleDateFormat
@@ -253,6 +254,60 @@ open class Hbci4JavaBankingClient @JvmOverloads constructor(
         val status = handle.execute()
 
         return Triple(saldoJob, umsatzJob, status)
+    }
+
+
+    override fun transferCashAsync(cashTransfer: CashTransfer, callback: (CashTransferResult) -> Unit) {
+        thread {
+            callback(transferCash(cashTransfer))
+        }
+    }
+
+    override fun transferCash(transfer: CashTransfer): CashTransferResult {
+        val connection = connect()
+
+        connection.handle?.let { handle ->
+            try {
+                createTransferCashJob(handle, transfer)
+
+                val status = handle.execute()
+
+                return CashTransferResult(status.isOK, status.toString())
+            } catch(e: Exception) {
+                log.error("Could not transfer cash $transfer" , e)
+                return CashTransferResult(false, e.localizedMessage, e)
+            }
+            finally {
+                closeConnection(connection)
+            }
+        }
+
+        return CashTransferResult(false, "Could not connect", connection.error)
+    }
+
+    private fun createTransferCashJob(handle: HBCIHandler, transfer: CashTransfer) {
+        val transferCashJob = handle.newJob("UebSEPA")
+
+        val source = mapToKonto(transfer.source)
+        val destination = mapToKonto(transfer.destination)
+        val amount = Value(transfer.amount, "EUR")
+
+        transferCashJob.setParam("src", source)
+        transferCashJob.setParam("dst", destination)
+        transferCashJob.setParam("btg", amount)
+        transferCashJob.setParam("usage", transfer.usage)
+
+        transferCashJob.addToQueue()
+    }
+
+    private fun mapToKonto(party: SepaParty): Konto {
+        val konto = Konto(party.country, party.blz, party.kontoNummer)
+
+        konto.name = party.name
+        konto.iban = party.iban
+        konto.bic = party.bic
+
+        return konto
     }
 
 

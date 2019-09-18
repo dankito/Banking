@@ -2,9 +2,7 @@ package net.dankito.banking
 
 import net.dankito.banking.callbacks.GetAccountingEntriesCallback
 import net.dankito.banking.callbacks.GetAccountsCallback
-import net.dankito.banking.model.Account
-import net.dankito.banking.model.AccountingEntries
-import net.dankito.banking.model.GetAccountsResult
+import net.dankito.banking.model.*
 import java.util.*
 
 
@@ -48,5 +46,10 @@ interface IBankingClient {
      * or not.
      */
     fun getAccountingEntriesOfLast90DaysAsync(account: Account, callback: (AccountingEntries) -> Unit)
+
+
+    fun transferCashAsync(cashTransfer: CashTransfer, callback: (CashTransferResult) -> Unit)
+
+    fun transferCash(transfer: CashTransfer): CashTransferResult
 
 }

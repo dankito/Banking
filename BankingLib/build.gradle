@@ -25,6 +25,7 @@ dependencies {
 
 
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.assertj:assertj-core:$assertJVersion"
 
     testCompile "ch.qos.logback:logback-core:$logbackVersion"
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
