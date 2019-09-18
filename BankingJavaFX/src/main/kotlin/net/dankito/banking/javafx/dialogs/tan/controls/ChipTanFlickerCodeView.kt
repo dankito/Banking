@@ -14,6 +14,13 @@ import tornadofx.*
 class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
 
     companion object {
+        private const val ChangeSizeStripeHeightChange = 7.0
+        private const val ChangeSizeStripeWidthChange = 2.0
+        private const val ChangeSizeSpaceBetweenStripesChange = 1.0
+
+        const val MinFlickerCodeViewWidth = 124.0 + ChangeSizeStripeWidthChange + ChangeSizeSpaceBetweenStripesChange // below space between stripes aren't visible anymore
+        const val MaxFlickerCodeViewWidth = 1000.0 // what is a senseful value?
+
         private const val IconWidth = 26.0
         private const val IconHeight = 26.0
     }
@@ -23,7 +30,7 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
 
     private val stripeHeight = SimpleDoubleProperty(127.0)
     private val stripeWidth = SimpleDoubleProperty(42.0)
-    private val marginBetweenStripes = SimpleDoubleProperty(10.0)
+    private val spaceBetweenStripes = SimpleDoubleProperty(10.0)
 
     private val flickerCodeViewWidth = SimpleDoubleProperty()
 
@@ -32,6 +39,9 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
     private val stripe3 = SimpleBooleanProperty()
     private val stripe4 = SimpleBooleanProperty()
     private val stripe5 = SimpleBooleanProperty()
+
+    private val isMinSizeReached = SimpleBooleanProperty(false)
+    private val isMaxSizeReached = SimpleBooleanProperty(false)
 
     private val renderer = object : FlickerRenderer(flickerCodeData) {
         override fun paint(showStripe1: Boolean, showStripe2: Boolean, showStripe3: Boolean, showStripe4: Boolean, showStripe5: Boolean) {
@@ -45,7 +55,7 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
     
     
     init {
-        flickerCodeViewWidth.bind(stripeWidth.add(marginBetweenStripes).multiply(4).add(stripeWidth).add(flickerCodeLeftRightMargin).add(flickerCodeLeftRightMargin))
+        flickerCodeViewWidth.bind(stripeWidth.add(spaceBetweenStripes).multiply(4).add(stripeWidth).add(flickerCodeLeftRightMargin).add(flickerCodeLeftRightMargin))
 
         renderer.setFrequency(20)
     }
@@ -74,6 +84,8 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
                 prefHeight = IconHeight
                 prefWidth = IconWidth
 
+                disableWhen(isMaxSizeReached)
+
                 action { increaseSize() }
 
                 hboxConstraints {
@@ -85,6 +97,8 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
             button("-") {
                 prefHeight = IconHeight
                 prefWidth = IconWidth
+
+                disableWhen(isMinSizeReached)
 
                 action { decreaseSize() }
             }
@@ -118,10 +132,10 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
                 hbox {
                     minHeight = 150.0
 
-                    add(ChipTanFlickerCodeStripeView(stripe1, stripeWidth, stripeHeight, marginBetweenStripes))
-                    add(ChipTanFlickerCodeStripeView(stripe2, stripeWidth, stripeHeight, marginBetweenStripes))
-                    add(ChipTanFlickerCodeStripeView(stripe3, stripeWidth, stripeHeight, marginBetweenStripes))
-                    add(ChipTanFlickerCodeStripeView(stripe4, stripeWidth, stripeHeight, marginBetweenStripes))
+                    add(ChipTanFlickerCodeStripeView(stripe1, stripeWidth, stripeHeight, spaceBetweenStripes))
+                    add(ChipTanFlickerCodeStripeView(stripe2, stripeWidth, stripeHeight, spaceBetweenStripes))
+                    add(ChipTanFlickerCodeStripeView(stripe3, stripeWidth, stripeHeight, spaceBetweenStripes))
+                    add(ChipTanFlickerCodeStripeView(stripe4, stripeWidth, stripeHeight, spaceBetweenStripes))
                     add(ChipTanFlickerCodeStripeView(stripe5, stripeWidth, stripeHeight, SimpleDoubleProperty(0.0)))
                 }
 
@@ -157,15 +171,30 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
     }
 
     private fun increaseSize() {
-        stripeHeight.set(stripeHeight.get() + 7.0)
-        stripeWidth.set(stripeWidth.get() + 2.0)
-        marginBetweenStripes.set(marginBetweenStripes.get() + 1.0)
+        if (isMaxSizeReached.value == false) {
+            stripeHeight.set(stripeHeight.get() + ChangeSizeStripeHeightChange)
+            stripeWidth.set(stripeWidth.get() + ChangeSizeStripeWidthChange)
+            spaceBetweenStripes.set(spaceBetweenStripes.get() + ChangeSizeSpaceBetweenStripesChange)
+        }
+
+        updateMinAndMaxSizeReached()
     }
 
     private fun decreaseSize() {
-        stripeHeight.set(stripeHeight.get() - 7.0)
-        stripeWidth.set(stripeWidth.get() - 2.0)
-        marginBetweenStripes.set(marginBetweenStripes.get() - 1.0)
+        if (isMinSizeReached.value == false) {
+            stripeHeight.set(stripeHeight.get() - ChangeSizeStripeHeightChange)
+            stripeWidth.set(stripeWidth.get() - ChangeSizeStripeWidthChange)
+            spaceBetweenStripes.set(spaceBetweenStripes.get() - ChangeSizeSpaceBetweenStripesChange)
+        }
+
+        updateMinAndMaxSizeReached()
+    }
+
+    private fun updateMinAndMaxSizeReached() {
+        val flickerCodeWidth = stripeWidth.value * 5 + spaceBetweenStripes.value * 4
+
+        isMinSizeReached.set(flickerCodeWidth < MinFlickerCodeViewWidth)
+        isMaxSizeReached.set(flickerCodeWidth > MaxFlickerCodeViewWidth)
     }
 
 }
