@@ -1,6 +1,8 @@
 package net.dankito.banking
 
 import net.dankito.banking.model.*
+import net.dankito.banking.tan.TanData
+import net.dankito.banking.tan.TanHandler
 import net.dankito.banking.util.AccountingEntryMapper
 import org.kapott.hbci.GV.HBCIJob
 import org.kapott.hbci.GV_Result.GVRKUms
@@ -22,7 +24,11 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
 
-open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataDirectory: File) : IBankingClient {
+open class Hbci4JavaBankingClient @JvmOverloads constructor(
+        val credentials: AccountCredentials,
+        val dataDirectory: File = File("data"),
+        val enterTanCallback: ((TanData) -> String?)? = null
+) : IBankingClient {
 
     companion object {
         // the date format is hard coded in HBCIUtils.string2DateISO()
@@ -46,7 +52,7 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
         // In "props" koennen optional Kernel-Parameter abgelegt werden, die in der Klasse
         // org.kapott.hbci.manager.HBCIUtils (oben im Javadoc) beschrieben sind.
         val props = Properties()
-        HBCIUtils.init(props, MyHBCICallback(credentials))
+        HBCIUtils.init(props, MyHBCICallback(credentials, enterTanCallback))
 
         // In der Passport-Datei speichert HBCI4Java die Daten des Bankzugangs (Bankparameterdaten, Benutzer-Parameter, etc.).
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
@@ -254,7 +260,13 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
      * Ueber diesen Callback kommuniziert HBCI4Java mit dem Benutzer und fragt die benoetigten
      * Informationen wie Benutzerkennung, PIN usw. ab.
      */
-    private class MyHBCICallback(private val credentials: AccountCredentials) : AbstractHBCICallback() {
+    private class MyHBCICallback(private val credentials: AccountCredentials,
+                                 enterTanCallback: ((TanData) -> String?)? = null
+    ) : AbstractHBCICallback() {
+
+        private val tanHandler = TanHandler(enterTanCallback)
+
+
         /**
          * @see org.kapott.hbci.callback.HBCICallback.log
          */
@@ -292,6 +304,12 @@ open class Hbci4JavaBankingClient(val credentials: AccountCredentials, val dataD
             // Die Kundenkennung. Meist identisch mit der Benutzerkennung.
             // Bei manchen Banken kann man die auch leer lassen
                 HBCICallback.NEED_CUSTOMERID -> retData.replace(0, retData.length, credentials.customerId)
+
+                HBCICallback.NEED_PT_TAN -> {
+                    tanHandler.getTanFromUser(msg, retData.toString())?.let { enteredTan ->
+                        retData.replace(0, retData.length, enteredTan)
+                    }
+                }
 
             // Manche Fehlermeldungen werden hier ausgegeben
                 HBCICallback.HAVE_ERROR -> log.error(msg)
