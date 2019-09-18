@@ -4,10 +4,8 @@ import javafx.beans.binding.ObjectBinding
 import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.geometry.Pos
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TextField
+import javafx.scene.control.*
+import javafx.scene.input.ContextMenuEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Priority
@@ -19,6 +17,7 @@ import net.dankito.banking.model.Account
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
 import net.dankito.utils.exception.ExceptionHelper
+import net.dankito.utils.javafx.ui.controls.addButton
 import net.dankito.utils.javafx.ui.extensions.fixedHeight
 import org.slf4j.LoggerFactory
 import tornadofx.*
@@ -43,6 +42,10 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
     private var balanceLabel: Label by singleAssign()
 
     private var updateAccountingEntriesButton: Button by singleAssign()
+
+    private var createCashTransferButton: Button by singleAssign()
+
+    private var currentMenu: ContextMenu? = null
 
 
     private var currentSelectedAccount: Account? = null
@@ -99,7 +102,6 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                     minWidth = 50.0
                     alignment = Pos.CENTER_RIGHT
                 }
-                add(balanceLabel)
 
                 updateAccountingEntriesButton = button("Update") {
                     useMaxHeight = true
@@ -108,6 +110,18 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                     isDisable = true
 
                     action { updateAccountingEntries() }
+
+                    hboxConstraints {
+                        marginLeft = 12.0
+                    }
+                }
+
+                createCashTransferButton = addButton {
+                    useMaxHeight = true
+
+                    isDisable = true
+
+                    action { createCashTransfer() }
 
                     hboxConstraints {
                         marginLeft = 12.0
@@ -155,6 +169,8 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
             vgrow = Priority.ALWAYS
 
             setOnMouseClicked { tableClicked(it, this.selectionModel.selectedItem) }
+
+            setOnContextMenuRequested { event -> showContextMenu(this, event) }
         }
     }
 
@@ -164,6 +180,30 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                 controller.showAccountingEntriesDetailsDialog(selectedItem)
             }
         }
+    }
+
+    private fun showContextMenu(table: TableView<AccountingEntry>, event: ContextMenuEvent) {
+        currentMenu?.hide()
+
+        val selectedItems = table.selectionModel.selectedItems
+
+        if (selectedItems.isNotEmpty()) {
+            currentMenu = createContextMenuForItems(selectedItems.get(0))
+
+            currentMenu?.show(table, event.screenX, event.screenY)
+        }
+    }
+
+    private fun createContextMenuForItems(selectedEntry: AccountingEntry): ContextMenu? {
+        val contextMenu = ContextMenu()
+
+        contextMenu.apply {
+            item(String.format(FX.messages["accounting.entry.context.menu.create.cash.transfer"], selectedEntry.other.name)) {
+                action { createCashTransfer(selectedEntry.other.name, selectedEntry.other.iban) }
+            }
+        }
+
+        return contextMenu
     }
 
 
@@ -202,6 +242,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
         searchTextField.isDisable = false
         updateAccountingEntriesButton.isDisable = false
+        createCashTransferButton.isDisable = false
 
         setEntriesOfCurrentAccount(account, AccountingEntries(false))
 
@@ -256,6 +297,14 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
         showError(message, error)
     }
+
+
+    private fun createCashTransfer(remitteeName: String = "", remitteeIban: String = "") {
+        currentSelectedAccount?.let { account ->
+            controller.showCreateCashTransferDialog(account, remitteeName, remitteeIban)
+        }
+    }
+
 
     private fun showError(message: String, exception: Exception) {
         dialogService.showErrorMessage(message, null, exception, currentStage)

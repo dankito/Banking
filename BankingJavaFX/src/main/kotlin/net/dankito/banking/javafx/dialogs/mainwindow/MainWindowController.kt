@@ -7,6 +7,7 @@ import net.dankito.banking.javafx.dialogs.accountdetails.AccountDetailsDialog
 import net.dankito.banking.javafx.dialogs.accountingentriesdetails.AccountingEntriesDetailsDialog
 import net.dankito.banking.javafx.dialogs.addaccount.AddAccountDialog
 import net.dankito.banking.javafx.dialogs.bankdetails.BankDetailsDialog
+import net.dankito.banking.javafx.dialogs.cashtransfer.CreateCashTransferDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.controls.IMainView
 import net.dankito.banking.javafx.dialogs.tan.EnterTanDialog
 import net.dankito.banking.model.*
@@ -213,6 +214,23 @@ class MainWindowController : Controller() {
     }
 
 
+    fun findBankByIban(account: Account, enteredIban: String): BankInfo? {
+        val client = getClientForAccount(account)
+
+        return client.findBankByIban(enteredIban)
+    }
+
+    fun transferCashAsync(account: Account, cashTransfer: CashTransfer, callback: (CashTransferResult) -> Unit) {
+        val client = getClientForAccount(account)
+
+        client.transferCashAsync(cashTransfer) { result ->
+            storeClientIfSuccessful(client, account.credentials, result)
+
+            callback(result)
+        }
+    }
+
+
     private fun getClientForAccount(account: Account): IBankingClient {
         return getClientForAccount(account.credentials)
     }
@@ -277,6 +295,14 @@ class MainWindowController : Controller() {
     fun showAccountingEntriesDetailsDialog(entry: AccountingEntry) {
         find(AccountingEntriesDetailsDialog::class, mapOf(AccountingEntriesDetailsDialog::entry to entry))
                 .show(messages["accounting.entries.details.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
+    }
+
+    fun showCreateCashTransferDialog(account: Account, remitteeName: String = "", remitteeIban: String = "") {
+        find(CreateCashTransferDialog::class, mapOf(CreateCashTransferDialog::controller to this,
+                CreateCashTransferDialog::account to account,
+                CreateCashTransferDialog::selectedRemitteeName to remitteeName,
+                CreateCashTransferDialog::selectedRemitteeIban to remitteeIban))
+                .show(messages["create.cash.transfer.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
     }
 
     fun showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(data: TanData): String? {
