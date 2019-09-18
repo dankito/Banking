@@ -4,6 +4,7 @@ import javafx.beans.binding.ObjectBinding
 import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TextField
@@ -18,7 +19,7 @@ import net.dankito.banking.model.Account
 import net.dankito.banking.model.AccountingEntries
 import net.dankito.banking.model.AccountingEntry
 import net.dankito.utils.exception.ExceptionHelper
-import net.dankito.utils.javafx.ui.controls.UpdateButton
+import net.dankito.utils.javafx.ui.extensions.fixedHeight
 import org.slf4j.LoggerFactory
 import tornadofx.*
 import java.text.DateFormat
@@ -41,7 +42,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
     private var balanceLabel: Label by singleAssign()
 
-    private var updateAccountingEntriesButton: UpdateButton by singleAssign()
+    private var updateAccountingEntriesButton: Button by singleAssign()
 
 
     private var currentSelectedAccount: Account? = null
@@ -67,8 +68,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
     override val root = vbox {
         borderpane {
-            minHeight = 36.0
-            maxHeight = 36.0
+            fixedHeight = 36.0
 
             left = label(messages["accounting.entries.search.label"]) {
                 borderpaneConstraints {
@@ -101,14 +101,18 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
                 }
                 add(balanceLabel)
 
-                updateAccountingEntriesButton = UpdateButton("Update", { updateAccountingEntries() }).apply {
+                updateAccountingEntriesButton = button("Update") {
+                    useMaxHeight = true
+                    prefWidth = 125.0
+
                     isDisable = true
+
+                    action { updateAccountingEntries() }
 
                     hboxConstraints {
                         marginLeft = 12.0
                     }
                 }
-                add(updateAccountingEntriesButton)
             }
         }
 
@@ -212,7 +216,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
 
     private fun updateAccountingEntries(account: Account) {
         runLater {
-            updateAccountingEntriesButton.setIsUpdating()
+            updateAccountingEntriesButton.isDisable = true
         }
 
         controller.getAccountingEntriesAsync(account) { result ->
@@ -221,7 +225,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
     }
 
     private fun retrievedAccountingEntriesResultOnUiThread(account: Account, result: AccountingEntries) {
-        updateAccountingEntriesButton.resetIsUpdating()
+        updateAccountingEntriesButton.isDisable = false
 
         if(result.successful) {
             setEntriesOfCurrentAccount(account, result)

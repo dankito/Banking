@@ -13,6 +13,8 @@ import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsBankInfoTreeI
 import net.dankito.banking.javafx.dialogs.mainwindow.model.AccountsRootTreeItem
 import net.dankito.banking.model.Account
 import net.dankito.banking.model.BankInfo
+import net.dankito.utils.javafx.ui.extensions.fixedHeight
+import net.dankito.utils.javafx.ui.extensions.fixedWidth
 import tornadofx.*
 
 
@@ -28,8 +30,7 @@ class AccountsView(private val controller: MainWindowController) : View() {
 
     override val root = vbox {
         borderpane {
-            minHeight = 36.0
-            maxHeight = 36.0
+            fixedHeight = 36.0
 
             left = label(messages["accounts.view.accounts.label"]) {
                 borderpaneConstraints {
@@ -39,10 +40,8 @@ class AccountsView(private val controller: MainWindowController) : View() {
             }
 
             right = button("+") {
-                minWidth = 32.0
-                maxWidth = 32.0
-                minHeight = 32.0
-                maxHeight = 32.0
+                fixedHeight = 32.0
+                fixedWidth = 32.0
 
                 setOnMouseClicked { clickedAddAccount(it) }
 

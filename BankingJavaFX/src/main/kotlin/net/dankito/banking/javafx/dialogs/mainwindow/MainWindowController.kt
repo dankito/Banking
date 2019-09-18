@@ -8,16 +8,20 @@ import net.dankito.banking.javafx.dialogs.accountingentriesdetails.AccountingEnt
 import net.dankito.banking.javafx.dialogs.addaccount.AddAccountDialog
 import net.dankito.banking.javafx.dialogs.bankdetails.BankDetailsDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.controls.IMainView
+import net.dankito.banking.javafx.dialogs.tan.EnterTanDialog
 import net.dankito.banking.model.*
 import net.dankito.banking.persistence.IAccountDataPersister
 import net.dankito.banking.persistence.IAccountSettingsPersister
 import net.dankito.banking.persistence.JsonAccountDataPersister
 import net.dankito.banking.persistence.JsonAccountSettingsPersister
+import net.dankito.banking.tan.TanData
 import org.slf4j.LoggerFactory
 import tornadofx.*
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
 
@@ -216,7 +220,9 @@ class MainWindowController : Controller() {
     private fun getClientForAccount(credentials: AccountCredentials): IBankingClient {
         clientsForAccounts[credentials]?.let { return it }
 
-        val newClient = Hbci4JavaBankingClient(credentials, DataFolder)
+        val newClient = Hbci4JavaBankingClient(credentials, DataFolder) { data ->
+            showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(data)
+        }
 
         return newClient
     }
@@ -259,18 +265,40 @@ class MainWindowController : Controller() {
     }
 
     fun showBankDetailsDialog(bankInfo: BankInfo) {
-        find(BankDetailsDialog::class.java, mapOf(BankDetailsDialog::bankInfo to bankInfo))
+        find(BankDetailsDialog::class, mapOf(BankDetailsDialog::bankInfo to bankInfo))
                 .show(messages["bank.details.name.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
     }
 
     fun showAccountDetailsDialog(account: Account) {
-        find(AccountDetailsDialog::class.java, mapOf(AccountDetailsDialog::account to account))
+        find(AccountDetailsDialog::class, mapOf(AccountDetailsDialog::account to account))
                 .show(messages["account.details.name.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
     }
 
     fun showAccountingEntriesDetailsDialog(entry: AccountingEntry) {
-        find(AccountingEntriesDetailsDialog::class.java, mapOf(AccountingEntriesDetailsDialog::entry to entry))
+        find(AccountingEntriesDetailsDialog::class, mapOf(AccountingEntriesDetailsDialog::entry to entry))
                 .show(messages["accounting.entries.details.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
+    }
+
+    fun showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(data: TanData): String? {
+        val enteredTan = AtomicReference<String>(null)
+        val countDownLatch = CountDownLatch(1)
+
+        runLater {
+            showEnterTanDialog(data) {
+                enteredTan.set(it)
+
+                countDownLatch.countDown()
+            }
+        }
+
+        try { countDownLatch.await() } catch (ignored: Exception) { }
+
+        return enteredTan.get()
+    }
+
+    fun showEnterTanDialog(data: TanData, enteredTan: (String?) -> Unit) {
+        // didn't make it to pass enteredTan callback via params Map -> are therefor passed as constructor parameters
+        EnterTanDialog(data, enteredTan).show(FX.messages["enter.tan.dialog.title"], owner = primaryStage)
     }
 
 }
