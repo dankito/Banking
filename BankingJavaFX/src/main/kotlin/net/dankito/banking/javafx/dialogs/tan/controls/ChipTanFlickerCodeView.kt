@@ -14,12 +14,14 @@ import tornadofx.*
 class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
 
     companion object {
-        private const val ChangeSizeStripeHeightChange = 7.0
-        private const val ChangeSizeStripeWidthChange = 2.0
-        private const val ChangeSizeSpaceBetweenStripesChange = 1.0
+        private const val ChangeSizeStripeHeightStep = 7.0
+        private const val ChangeSizeStripeWidthStep = 2.0
+        private const val ChangeSizeSpaceBetweenStripesStep = 1.0
 
-        const val MinFlickerCodeViewWidth = 124.0 + ChangeSizeStripeWidthChange + ChangeSizeSpaceBetweenStripesChange // below space between stripes aren't visible anymore
+        const val MinFlickerCodeViewWidth = 124.0 + ChangeSizeStripeWidthStep + ChangeSizeSpaceBetweenStripesStep // below space between stripes aren't visible anymore
         const val MaxFlickerCodeViewWidth = 1000.0 // what is a senseful value?
+
+        private const val ChangeFrequencyStep = 5
 
         private const val IconWidth = 26.0
         private const val IconHeight = 26.0
@@ -43,6 +45,11 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
     private val isMinSizeReached = SimpleBooleanProperty(false)
     private val isMaxSizeReached = SimpleBooleanProperty(false)
 
+    private val isMinFrequencyReached = SimpleBooleanProperty(false)
+    private val isMaxFrequencyReached = SimpleBooleanProperty(false)
+
+    private var currentFrequency = 20
+
     private val renderer = object : FlickerRenderer(flickerCodeData) {
         override fun paint(showStripe1: Boolean, showStripe2: Boolean, showStripe3: Boolean, showStripe4: Boolean, showStripe5: Boolean) {
             super.paint(showStripe1, showStripe2, showStripe3, showStripe4, showStripe5)
@@ -57,7 +64,7 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
     init {
         flickerCodeViewWidth.bind(stripeWidth.add(spaceBetweenStripes).multiply(4).add(stripeWidth).add(flickerCodeLeftRightMargin).add(flickerCodeLeftRightMargin))
 
-        renderer.setFrequency(20)
+        renderer.setFrequency(currentFrequency)
     }
 
 
@@ -103,7 +110,34 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
                 action { decreaseSize() }
             }
 
-            // TODO: add speed (frequency) controls
+            label(messages["enter.tan.dialog.frequency.label"]) {
+                hboxConstraints {
+                    marginLeft = 12.0
+                }
+            }
+
+            button("+") {
+                prefHeight = IconHeight
+                prefWidth = IconWidth
+
+                disableWhen(isMaxFrequencyReached)
+
+                action { increaseFrequency() }
+
+                hboxConstraints {
+                    marginLeft = 6.0
+                    marginRight = 4.0
+                }
+            }
+
+            button("-") {
+                prefHeight = IconHeight
+                prefWidth = IconWidth
+
+                disableWhen(isMinFrequencyReached)
+
+                action { decreaseFrequency() }
+            }
         }
 
         vbox {
@@ -170,11 +204,12 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
         }
     }
 
+
     private fun increaseSize() {
         if (isMaxSizeReached.value == false) {
-            stripeHeight.set(stripeHeight.get() + ChangeSizeStripeHeightChange)
-            stripeWidth.set(stripeWidth.get() + ChangeSizeStripeWidthChange)
-            spaceBetweenStripes.set(spaceBetweenStripes.get() + ChangeSizeSpaceBetweenStripesChange)
+            stripeHeight.value = stripeHeight.value + ChangeSizeStripeHeightStep
+            stripeWidth.value = stripeWidth.value + ChangeSizeStripeWidthStep
+            spaceBetweenStripes.value = spaceBetweenStripes.value + ChangeSizeSpaceBetweenStripesStep
         }
 
         updateMinAndMaxSizeReached()
@@ -182,9 +217,9 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
 
     private fun decreaseSize() {
         if (isMinSizeReached.value == false) {
-            stripeHeight.set(stripeHeight.get() - ChangeSizeStripeHeightChange)
-            stripeWidth.set(stripeWidth.get() - ChangeSizeStripeWidthChange)
-            spaceBetweenStripes.set(spaceBetweenStripes.get() - ChangeSizeSpaceBetweenStripesChange)
+            stripeHeight.value = stripeHeight.value - ChangeSizeStripeHeightStep
+            stripeWidth.value = stripeWidth.value - ChangeSizeStripeWidthStep
+            spaceBetweenStripes.value = spaceBetweenStripes.value - ChangeSizeSpaceBetweenStripesStep
         }
 
         updateMinAndMaxSizeReached()
@@ -193,8 +228,35 @@ class ChipTanFlickerCodeView(private val flickerCodeData: String): View() {
     private fun updateMinAndMaxSizeReached() {
         val flickerCodeWidth = stripeWidth.value * 5 + spaceBetweenStripes.value * 4
 
-        isMinSizeReached.set(flickerCodeWidth < MinFlickerCodeViewWidth)
-        isMaxSizeReached.set(flickerCodeWidth > MaxFlickerCodeViewWidth)
+        isMinSizeReached.value = flickerCodeWidth < MinFlickerCodeViewWidth
+        isMaxSizeReached.value = flickerCodeWidth > MaxFlickerCodeViewWidth
+    }
+
+    private fun increaseFrequency() {
+        if (isMaxFrequencyReached.value == false
+                && (currentFrequency + ChangeFrequencyStep) <= FlickerRenderer.FREQUENCY_MAX) {
+
+            currentFrequency += ChangeFrequencyStep
+            renderer.setFrequency(currentFrequency)
+        }
+
+        updateMinAndMaxFrequencyReached()
+    }
+
+    private fun decreaseFrequency() {
+        if (isMinFrequencyReached.value == false
+                && (currentFrequency - ChangeFrequencyStep) >= FlickerRenderer.FREQUENCY_MIN) {
+
+            currentFrequency -= ChangeFrequencyStep
+            renderer.setFrequency(currentFrequency)
+        }
+
+        updateMinAndMaxFrequencyReached()
+    }
+
+    private fun updateMinAndMaxFrequencyReached() {
+        isMaxFrequencyReached.value = (currentFrequency + ChangeFrequencyStep) > FlickerRenderer.FREQUENCY_MAX
+        isMinFrequencyReached.value = (currentFrequency - ChangeFrequencyStep) < FlickerRenderer.FREQUENCY_MIN
     }
 
 }
