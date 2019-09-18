@@ -11,14 +11,23 @@ import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 
+
 class Hbci4JavaBankingClientTest {
+
+    companion object {
+        // set your account details here
+        private const val Bankleitzahl = ""
+        private const val CustomerId = ""
+        private const val Pin = ""
+    }
+
 
     private lateinit var underTest: Hbci4JavaBankingClient
 
 
     @Before
     fun setUp() {
-        underTest = Hbci4JavaBankingClient(AccountCredentials("", "", ""), File("testDir")) // set your account details here
+        underTest = Hbci4JavaBankingClient(AccountCredentials(Bankleitzahl, CustomerId, Pin), File("testDir"))
     }
 
 
