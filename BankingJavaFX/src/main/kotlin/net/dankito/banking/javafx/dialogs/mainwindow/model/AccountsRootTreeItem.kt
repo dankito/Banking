@@ -5,9 +5,10 @@ import javafx.collections.ObservableList
 import net.dankito.banking.javafx.util.FXUtils
 import net.dankito.banking.model.BankInfo
 import tornadofx.*
+import tornadofx.FX.Companion.messages
 
 
-class AccountsRootTreeItem(bankInfos: ObservableList<BankInfo>) : AccountsTreeItemBase(FX.messages["accounts.view.accounts.label"]) {
+class AccountsRootTreeItem(bankInfos: ObservableList<BankInfo>) : AccountsTreeItemBase(messages["accounts.view.accounts.label"]) {
 
     init {
         bankInfos.forEach { bankInfo ->

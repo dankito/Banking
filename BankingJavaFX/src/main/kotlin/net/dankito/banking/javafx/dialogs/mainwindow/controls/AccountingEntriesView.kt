@@ -198,7 +198,7 @@ class AccountingEntriesView(private val controller: MainWindowController) : View
         val contextMenu = ContextMenu()
 
         contextMenu.apply {
-            item(String.format(FX.messages["accounting.entry.context.menu.create.cash.transfer"], selectedEntry.other.name)) {
+            item(String.format(messages["accounting.entry.context.menu.create.cash.transfer"], selectedEntry.other.name)) {
                 action { createCashTransfer(selectedEntry.other.name, selectedEntry.other.iban) }
             }
         }

@@ -77,10 +77,6 @@ class EnterTanDialog(private val data: TanData,
                     marginLeft = 6.0
                 }
             }
-
-            vboxConstraints {
-                marginBottom = 4.0
-            }
         }
 
         hbox {
@@ -90,7 +86,7 @@ class EnterTanDialog(private val data: TanData,
                 prefHeight = ButtonHeight
                 prefWidth = ButtonWidth
 
-                action { cancelEnteringTang() }
+                action { cancelEnteringTan() }
 
                 hboxConstraints {
                     margin = Insets(6.0, 0.0, 4.0, 0.0)
@@ -106,6 +102,10 @@ class EnterTanDialog(private val data: TanData,
                 hboxConstraints {
                     margin = Insets(6.0, 4.0, 4.0, 12.0)
                 }
+            }
+
+            vboxConstraints {
+                marginTop = 4.0
             }
         }
     }
@@ -128,7 +128,7 @@ class EnterTanDialog(private val data: TanData,
         close()
     }
 
-    private fun cancelEnteringTang() {
+    private fun cancelEnteringTan() {
         enteringTanDone(null)
 
         close()
