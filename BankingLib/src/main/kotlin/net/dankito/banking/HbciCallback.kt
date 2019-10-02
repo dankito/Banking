@@ -50,13 +50,8 @@ class HbciCallback(private val credentials: AccountCredentials,
             // one for NEED_PASSPHRASE_SAVE
             HBCICallback.NEED_PASSPHRASE_LOAD, HBCICallback.NEED_PASSPHRASE_SAVE -> retData.replace(0, retData.length, credentials.pin)
 
-            // PIN wird benoetigt
-            HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, credentials.pin)
 
-            // ADDED: Auswaehlen welches PinTan Verfahren verwendet werden soll
-            HBCICallback.NEED_PT_SECMECH -> tanHandler.selectTanProcedure(retData.toString())?.let { selectedTanProcedure ->
-                retData.replace(0, retData.length, selectedTanProcedure.procedureCode)
-            }
+            /*      Customer (authentication) data           */
 
             // BLZ wird benoetigt
             HBCICallback.NEED_BLZ -> retData.replace(0, retData.length, credentials.bankleitzahl)
@@ -68,7 +63,18 @@ class HbciCallback(private val credentials: AccountCredentials,
             // Bei manchen Banken kann man die auch leer lassen
             HBCICallback.NEED_CUSTOMERID -> retData.replace(0, retData.length, credentials.customerId)
 
-            // chipTan
+            // PIN wird benoetigt
+            HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, credentials.pin)
+
+
+            /*          TAN         */
+
+            // ADDED: Auswaehlen welches PinTan Verfahren verwendet werden soll
+            HBCICallback.NEED_PT_SECMECH -> tanHandler.selectTanProcedure(retData.toString())?.let { selectedTanProcedure ->
+                retData.replace(0, retData.length, selectedTanProcedure.procedureCode)
+            }
+
+            // chipTan or simple TAN request (iTAN, smsTAN, ...)
             HBCICallback.NEED_PT_TAN -> {
                 tanHandler.getTanFromUser(msg, retData.toString())?.let { enteredTan ->
                     retData.replace(0, retData.length, enteredTan)
