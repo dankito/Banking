@@ -1,7 +1,7 @@
 package net.dankito.banking
 
+import net.dankito.banking.callbacks.HbciClientCallback
 import net.dankito.banking.model.*
-import net.dankito.banking.tan.TanData
 import net.dankito.banking.util.AccountingEntryMapper
 import org.kapott.hbci.GV.HBCIJob
 import org.kapott.hbci.GV_Result.GVRKUms
@@ -26,7 +26,7 @@ import kotlin.concurrent.thread
 open class Hbci4JavaBankingClient @JvmOverloads constructor(
         val credentials: AccountCredentials,
         val dataDirectory: File = File("data"),
-        val enterTanCallback: ((TanData) -> String?)? = null
+        val callback: HbciClientCallback? = null
 ) : IBankingClient {
 
     companion object {
@@ -65,7 +65,7 @@ open class Hbci4JavaBankingClient @JvmOverloads constructor(
         // In "props" koennen optional Kernel-Parameter abgelegt werden, die in der Klasse
         // org.kapott.hbci.manager.HBCIUtils (oben im Javadoc) beschrieben sind.
         val props = Properties()
-        HBCIUtils.init(props, HbciCallback(credentials, enterTanCallback))
+        HBCIUtils.init(props, HbciCallback(credentials, callback))
 
         // In der Passport-Datei speichert HBCI4Java die Daten des Bankzugangs (Bankparameterdaten, Benutzer-Parameter, etc.).
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,

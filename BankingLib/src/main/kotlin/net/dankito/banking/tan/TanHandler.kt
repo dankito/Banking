@@ -1,7 +1,9 @@
 package net.dankito.banking.tan
 
+import net.dankito.banking.callbacks.HbciClientCallback
 
-open class TanHandler(private val enterTanCallback: ((TanData) -> String?)? = null) {
+
+open class TanHandler(private val callback: HbciClientCallback? = null) {
 
     open fun getTanFromUser(messageToShowToUser: String, flickerData: String): String? {
         // Wenn per "retData" Daten uebergeben wurden, dann enthalten diese
@@ -18,10 +20,10 @@ open class TanHandler(private val enterTanCallback: ((TanData) -> String?)? = nu
             // for Sparkasse messageToShowToUser started with "chipTAN optisch\nTAN-Nummer\n\n"
             val usefulMessage = messageToShowToUser.split("\n").last().trim()
 
-            return enterTanCallback?.invoke(ChipTanData(flickerData, TanProcedure.ChipTan, usefulMessage))
+            return callback?.enterTan(ChipTanData(flickerData, TanProcedure.ChipTan, usefulMessage))
         }
         else {
-            return enterTanCallback?.invoke(TanData(TanProcedure.EnterTan, messageToShowToUser))
+            return callback?.enterTan(TanData(TanProcedure.EnterTan, messageToShowToUser))
         }
     }
 

@@ -3,6 +3,7 @@ package net.dankito.banking.javafx.dialogs.mainwindow
 import javafx.stage.StageStyle
 import net.dankito.banking.Hbci4JavaBankingClient
 import net.dankito.banking.IBankingClient
+import net.dankito.banking.callbacks.HbciClientCallback
 import net.dankito.banking.javafx.dialogs.accountdetails.AccountDetailsDialog
 import net.dankito.banking.javafx.dialogs.accountingentriesdetails.AccountingEntriesDetailsDialog
 import net.dankito.banking.javafx.dialogs.addaccount.AddAccountDialog
@@ -238,9 +239,13 @@ class MainWindowController : Controller() {
     private fun getClientForAccount(credentials: AccountCredentials): IBankingClient {
         clientsForAccounts[credentials]?.let { return it }
 
-        val newClient = Hbci4JavaBankingClient(credentials, DataFolder) { data ->
-            showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(data)
-        }
+        val newClient = Hbci4JavaBankingClient(credentials, DataFolder, object : HbciClientCallback {
+
+            override fun enterTan(tanData: TanData): String? {
+                return showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(tanData)
+            }
+
+        })
 
         return newClient
     }

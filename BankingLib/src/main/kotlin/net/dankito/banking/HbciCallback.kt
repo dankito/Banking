@@ -1,10 +1,11 @@
 package net.dankito.banking
 
+import net.dankito.banking.callbacks.HbciClientCallback
 import net.dankito.banking.model.AccountCredentials
-import net.dankito.banking.tan.TanData
 import net.dankito.banking.tan.TanHandler
 import org.kapott.hbci.callback.AbstractHBCICallback
 import org.kapott.hbci.callback.HBCICallback
+import org.kapott.hbci.manager.HBCIUtils
 import org.kapott.hbci.passport.HBCIPassport
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -15,7 +16,7 @@ import java.util.*
  * Informationen wie Benutzerkennung, PIN usw. ab.
  */
 class HbciCallback(private val credentials: AccountCredentials,
-                   enterTanCallback: ((TanData) -> String?)? = null
+                   callback: HbciClientCallback? = null
 ) : AbstractHBCICallback() {
 
     companion object {
@@ -23,7 +24,7 @@ class HbciCallback(private val credentials: AccountCredentials,
     }
 
 
-    private val tanHandler = TanHandler(enterTanCallback)
+    private val tanHandler = TanHandler(callback)
 
 
     /**
