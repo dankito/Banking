@@ -11,11 +11,13 @@ import net.dankito.banking.javafx.dialogs.bankdetails.BankDetailsDialog
 import net.dankito.banking.javafx.dialogs.cashtransfer.CreateCashTransferDialog
 import net.dankito.banking.javafx.dialogs.mainwindow.controls.IMainView
 import net.dankito.banking.javafx.dialogs.tan.EnterTanDialog
+import net.dankito.banking.javafx.dialogs.tan.SelectTanProcedureDialog
 import net.dankito.banking.model.*
 import net.dankito.banking.persistence.IAccountDataPersister
 import net.dankito.banking.persistence.IAccountSettingsPersister
 import net.dankito.banking.persistence.JsonAccountDataPersister
 import net.dankito.banking.persistence.JsonAccountSettingsPersister
+import net.dankito.banking.tan.SelectTanProcedure
 import net.dankito.banking.tan.TanData
 import org.slf4j.LoggerFactory
 import tornadofx.*
@@ -241,6 +243,10 @@ class MainWindowController : Controller() {
 
         val newClient = Hbci4JavaBankingClient(credentials, DataFolder, object : HbciClientCallback {
 
+            override fun selectTanProcedure(selectableTanProcedures: List<SelectTanProcedure>): SelectTanProcedure? {
+                return showSelectTanProcedureDialogAndWaitForSelectionDoNotCallOnUiThread(selectableTanProcedures)
+            }
+
             override fun enterTan(tanData: TanData): String? {
                 return showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(tanData)
             }
@@ -284,7 +290,7 @@ class MainWindowController : Controller() {
 
     // TODO: move to router
     fun showAddAccountDialog() {
-        find(AddAccountDialog::class.java, mapOf(AddAccountDialog::controller to this)).show(FX.messages["add.account.dialog.title"], owner = primaryStage)
+        find(AddAccountDialog::class.java, mapOf(AddAccountDialog::controller to this)).show(messages["add.account.dialog.title"], owner = primaryStage)
     }
 
     fun showBankDetailsDialog(bankInfo: BankInfo) {
@@ -310,6 +316,35 @@ class MainWindowController : Controller() {
                 .show(messages["create.cash.transfer.title"], stageStyle = StageStyle.UTILITY, owner = primaryStage)
     }
 
+
+    fun showSelectTanProcedureDialogAndWaitForSelectionDoNotCallOnUiThread(
+            selectableTanProcedures: List<SelectTanProcedure>): SelectTanProcedure? {
+
+        val selectedProcedure = AtomicReference<SelectTanProcedure>(null)
+        val countDownLatch = CountDownLatch(1)
+
+        runLater {
+            showSelectTanProcedureDialog(selectableTanProcedures) {
+                selectedProcedure.set(it)
+
+                countDownLatch.countDown()
+            }
+        }
+
+        try { countDownLatch.await() } catch (ignored: Exception) { }
+
+        return selectedProcedure.get()
+    }
+
+    fun showSelectTanProcedureDialog(selectableTanProcedures: List<SelectTanProcedure>,
+                                     procedureSelected: (SelectTanProcedure?) -> Unit) {
+
+        // didn't make it to pass enteredTan callback via params Map -> are therefor passed as constructor parameters
+        SelectTanProcedureDialog(selectableTanProcedures, procedureSelected)
+                .show(messages["select.tan.procedure.dialog.title"], owner = primaryStage)
+    }
+
+
     fun showEnterTanDialogAndWaitForTanDoNotCallOnUiThread(data: TanData): String? {
         val enteredTan = AtomicReference<String>(null)
         val countDownLatch = CountDownLatch(1)
@@ -329,7 +364,7 @@ class MainWindowController : Controller() {
 
     fun showEnterTanDialog(data: TanData, enteredTan: (String?) -> Unit) {
         // didn't make it to pass enteredTan callback via params Map -> are therefor passed as constructor parameters
-        EnterTanDialog(data, enteredTan).show(FX.messages["enter.tan.dialog.title"], owner = primaryStage)
+        EnterTanDialog(data, enteredTan).show(messages["enter.tan.dialog.title"], owner = primaryStage)
     }
 
 }
