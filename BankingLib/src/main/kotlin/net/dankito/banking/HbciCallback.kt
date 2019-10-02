@@ -2,9 +2,7 @@ package net.dankito.banking
 
 import net.dankito.banking.callbacks.HbciClientCallback
 import net.dankito.banking.model.AccountCredentials
-import net.dankito.banking.tan.SelectTanProcedure
 import net.dankito.banking.tan.TanHandler
-import net.dankito.banking.tan.TanProcedure
 import org.kapott.hbci.callback.AbstractHBCICallback
 import org.kapott.hbci.callback.HBCICallback
 import org.kapott.hbci.manager.HBCIUtils
@@ -18,7 +16,7 @@ import java.util.*
  * Informationen wie Benutzerkennung, PIN usw. ab.
  */
 class HbciCallback(private val credentials: AccountCredentials,
-                   private val callback: HbciClientCallback? = null
+                   callback: HbciClientCallback? = null
 ) : AbstractHBCICallback() {
 
     companion object {
@@ -56,7 +54,9 @@ class HbciCallback(private val credentials: AccountCredentials,
             HBCICallback.NEED_PT_PIN -> retData.replace(0, retData.length, credentials.pin)
 
             // ADDED: Auswaehlen welches PinTan Verfahren verwendet werden soll
-            HBCICallback.NEED_PT_SECMECH -> selectTanProcedure(retData)
+            HBCICallback.NEED_PT_SECMECH -> tanHandler.selectTanProcedure(retData.toString())?.let { selectedTanProcedure ->
+                retData.replace(0, retData.length, selectedTanProcedure.procedureCode)
+            }
 
             // BLZ wird benoetigt
             HBCICallback.NEED_BLZ -> retData.replace(0, retData.length, credentials.bankleitzahl)
@@ -81,51 +81,6 @@ class HbciCallback(private val credentials: AccountCredentials,
             else -> { // Wir brauchen nicht alle der Callbacks
             }
         }
-    }
-
-    private fun selectTanProcedure(retData: StringBuffer) {
-        log.info("Available TAN procedures: $retData") // TODO: remove again
-
-        val selectableTanProcedures = parseSelectableTanProcedures(retData.toString())
-
-        if (selectableTanProcedures.isNotEmpty()) {
-            callback?.selectTanProcedure(selectableTanProcedures)?.let { selectedTanProcedure ->
-                retData.replace(0, retData.length, selectedTanProcedure.procedureCode)
-            }
-        }
-    }
-
-    private fun parseSelectableTanProcedures(selectTanProceduresString: String): List<SelectTanProcedure> {
-        return selectTanProceduresString.split('|')
-                .map { mapToSelectTanProcedure(it) }
-                .filterNotNull()
-    }
-
-    private fun mapToSelectTanProcedure(selectTanProcedureString: String): SelectTanProcedure? {
-        val parts = selectTanProcedureString.split(':')
-
-        if (parts.size > 1) {
-            val code = parts[0]
-            val procedureName = parts[1]
-            val nameLowerCase = procedureName.toLowerCase()
-
-            return when {
-                nameLowerCase.contains("chiptan") -> {
-                    if (nameLowerCase.contains("qr")) {
-                        SelectTanProcedure(TanProcedure.ChipTanQrCode, procedureName, code)
-                    }
-                    else {
-                        SelectTanProcedure(TanProcedure.ChipTan, procedureName, code)
-                    }
-                }
-                nameLowerCase.contains("sms") -> SelectTanProcedure(TanProcedure.SmsTan, procedureName, code)
-                nameLowerCase.contains("push") -> SelectTanProcedure(TanProcedure.PushTan, procedureName, code)
-                // we filter out iTAN and Einschritt-Verfahren as they are not permitted anymore according to PSD2
-                else -> null
-            }
-        }
-
-        return null
     }
 
     /**

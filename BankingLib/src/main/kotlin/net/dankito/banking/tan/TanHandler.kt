@@ -27,4 +27,51 @@ open class TanHandler(private val callback: HbciClientCallback? = null) {
         }
     }
 
+
+
+    open fun selectTanProcedure(selectableTanProceduresString: String): SelectTanProcedure? {
+        val selectableTanProcedures = parseSelectableTanProcedures(selectableTanProceduresString)
+
+        if (selectableTanProcedures.isNotEmpty()) {
+            return callback?.selectTanProcedure(selectableTanProcedures)
+        }
+
+        return null
+    }
+
+    protected open fun parseSelectableTanProcedures(selectTanProceduresString: String): List<SelectTanProcedure> {
+        return selectTanProceduresString.split('|')
+                .map { mapToSelectTanProcedure(it) }
+                .filterNotNull()
+    }
+
+    protected open fun mapToSelectTanProcedure(selectTanProcedureString: String): SelectTanProcedure? {
+        val parts = selectTanProcedureString.split(':')
+
+        if (parts.size > 1) {
+            val code = parts[0]
+            val procedureName = parts[1]
+            val nameLowerCase = procedureName.toLowerCase()
+
+            return when {
+                nameLowerCase.contains("chiptan") -> {
+                    if (nameLowerCase.contains("qr")) {
+                        SelectTanProcedure(TanProcedure.ChipTanQrCode, procedureName, code)
+                    }
+                    else {
+                        SelectTanProcedure(TanProcedure.ChipTan, procedureName, code)
+                    }
+                }
+
+                nameLowerCase.contains("sms") -> SelectTanProcedure(TanProcedure.SmsTan, procedureName, code)
+                nameLowerCase.contains("push") -> SelectTanProcedure(TanProcedure.PushTan, procedureName, code)
+
+                // we filter out iTAN and Einschritt-Verfahren as they are not permitted anymore according to PSD2
+                else -> null
+            }
+        }
+
+        return null
+    }
+
 }
